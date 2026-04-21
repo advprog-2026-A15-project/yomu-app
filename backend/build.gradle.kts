@@ -24,15 +24,13 @@ dependencies {
     // CORE & WEB
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-jdbc")
 
     // MODULARITY
     implementation("org.springframework.modulith:spring-modulith-starter-core")
-    implementation("org.springframework.modulith:spring-modulith-starter-jpa")
 
     // DATA & PERSISTENCE
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    implementation("org.flywaydb:flyway-core")
-    implementation("org.flywaydb:flyway-database-postgresql")
+    runtimeOnly("com.h2database:h2")
     runtimeOnly("org.postgresql:postgresql")
 
     // SECURITY & AUTH
@@ -49,7 +47,6 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.modulith:spring-modulith-starter-test")
-    testRuntimeOnly("com.h2database:h2")
 }
 
 dependencyManagement {
@@ -60,4 +57,13 @@ dependencyManagement {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+}
+
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+    systemProperty(
+        "spring.profiles.active",
+        System.getProperty("spring.profiles.active")
+            ?: System.getenv("SPRING_PROFILES_ACTIVE")
+            ?: "local"
+    )
 }

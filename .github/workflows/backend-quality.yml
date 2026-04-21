@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - main
+      - staging
     paths:
       - "backend/**"
       - ".github/workflows/backend-quality.yml"
@@ -30,4 +31,4 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
-      - run: ./gradlew test
+      - run: ./gradlew build

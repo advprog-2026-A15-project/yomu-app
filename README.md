@@ -69,5 +69,10 @@ Persistence modul belum diimplementasikan penuh. Repository dan entity masih pla
 
 Workflow GitHub Actions aktif ada di `.github/workflows/`:
 
-- `frontend-quality.yml`: install, lint, build frontend
-- `backend-quality.yml`: run backend test suite
+- `frontend-quality.yml`: install, lint, test, build frontend
+- `backend-quality.yml`: build backend
+
+### Docs
+
+- `docs/setup-design.md`: baseline setup repository, branching, dan design awal
+- `docs/contracts/`: kontrak event publik antar modul

@@ -8,6 +8,7 @@ on:
   push:
     branches:
       - main
+      - staging
     paths:
       - "frontend/**"
       - ".github/workflows/frontend-quality.yml"
@@ -31,4 +32,5 @@ jobs:
 
       - run: npm ci
       - run: npm run lint
+      - run: npm run test
       - run: npm run build

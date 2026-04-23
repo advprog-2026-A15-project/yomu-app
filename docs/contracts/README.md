@@ -14,3 +14,4 @@ Daftar kontrak saat ini:
 - `auth.UserRegisteredEvent`
 - `learning.LearningCompletedEvent`
 - `achievements.AchievementUnlockedEvent`
+- `forum.CommentCreatedEvent`

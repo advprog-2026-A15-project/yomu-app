@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -45,5 +46,22 @@ public class CommentServiceImpl implements CommentService {
 		);
 		eventPublisher.publishEvent(event);
 		return event;
+	}
+
+	@Override
+	public List<CommentResponse> listComments(String bacaanId) {
+		List<Comment> comments = (bacaanId == null || bacaanId.isBlank())
+			? commentRepository.findAll()
+			: commentRepository.findByBacaanId(bacaanId);
+
+		return comments.stream()
+			.map(comment -> new CommentResponse(
+				comment.getId(),
+				comment.getUserId(),
+				comment.getBacaanId(),
+				comment.getContent(),
+				comment.getCreatedAt().atZone(clock.getZone()).toInstant()
+			))
+			.toList();
 	}
 }

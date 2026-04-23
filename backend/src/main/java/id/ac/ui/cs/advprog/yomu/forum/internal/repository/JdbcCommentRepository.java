@@ -3,15 +3,28 @@ package id.ac.ui.cs.advprog.yomu.forum.internal.repository;
 import id.ac.ui.cs.advprog.yomu.forum.internal.model.Comment;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Repository
 public class JdbcCommentRepository implements CommentRepository {
+
+    private static final RowMapper<Comment> COMMENT_ROW_MAPPER = (rs, rowNum) -> {
+        Comment comment = new Comment(
+            rs.getString("user_id"),
+            rs.getString("bacaan_id"),
+            rs.getString("content")
+        );
+        comment.setId(rs.getString("id"));
+        comment.setCreatedAt(rs.getTimestamp("created_at").toLocalDateTime());
+        return comment;
+    };
 
     private final JdbcTemplate jdbcTemplate;
 
@@ -50,6 +63,23 @@ public class JdbcCommentRepository implements CommentRepository {
             Timestamp.valueOf(comment.getCreatedAt())
         );
         return comment;
+    }
+
+    @Override
+    public List<Comment> findAll() {
+        return jdbcTemplate.query(
+            "SELECT id, user_id, bacaan_id, content, created_at FROM comments ORDER BY created_at DESC",
+            COMMENT_ROW_MAPPER
+        );
+    }
+
+    @Override
+    public List<Comment> findByBacaanId(String bacaanId) {
+        return jdbcTemplate.query(
+            "SELECT id, user_id, bacaan_id, content, created_at FROM comments WHERE bacaan_id = ? ORDER BY created_at DESC",
+            COMMENT_ROW_MAPPER,
+            bacaanId
+        );
     }
 }
 

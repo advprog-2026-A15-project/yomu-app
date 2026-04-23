@@ -15,6 +15,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -61,6 +62,36 @@ class CommentServiceImplTest {
         verify(commentRepository).save(commentCaptor.capture());
         assertThat(commentCaptor.getValue().getCreatedAt()).isEqualTo(LocalDateTime.ofInstant(clock.instant(), clock.getZone()));
         verify(eventPublisher).publishEvent(result);
+    }
+
+    @Test
+    void listCommentsWithoutFilterReturnsMappedResponses() {
+        Comment storedComment = new Comment("user-1", "bacaan-1", "Komentar pertama");
+        storedComment.setId("comment-123");
+        storedComment.setCreatedAt(LocalDateTime.of(2026, 4, 23, 10, 0));
+
+        when(commentRepository.findAll()).thenReturn(List.of(storedComment));
+
+        List<CommentResponse> result = commentService.listComments(null);
+
+        assertThat(result).containsExactly(new CommentResponse(
+            "comment-123",
+            "user-1",
+            "bacaan-1",
+            "Komentar pertama",
+            Instant.parse("2026-04-23T10:00:00Z")
+        ));
+        verify(commentRepository).findAll();
+    }
+
+    @Test
+    void listCommentsWithBacaanIdUsesRepositoryFilter() {
+        when(commentRepository.findByBacaanId("bacaan-1")).thenReturn(List.of());
+
+        List<CommentResponse> result = commentService.listComments("bacaan-1");
+
+        assertThat(result).isEmpty();
+        verify(commentRepository).findByBacaanId("bacaan-1");
     }
 }
 

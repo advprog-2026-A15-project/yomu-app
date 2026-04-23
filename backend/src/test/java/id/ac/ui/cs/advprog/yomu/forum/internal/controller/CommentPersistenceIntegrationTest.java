@@ -6,12 +6,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import id.ac.ui.cs.advprog.yomu.forum.CommentCreatedEvent;
 import id.ac.ui.cs.advprog.yomu.forum.internal.service.CommentService;
 
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @SuppressWarnings({"SqlResolve", "SqlNoDataSourceInspection", "SqlStatementInspection"})
@@ -24,8 +29,14 @@ class CommentPersistenceIntegrationTest {
     @Autowired
     private CommentService commentService;
 
+    @Autowired
+    private CommentController commentController;
+
+    private MockMvc mockMvc;
+
     @BeforeEach
     void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(commentController).build();
         forumJdbcTemplate.update("DELETE FROM comments WHERE created_at IS NOT NULL");
     }
 
@@ -55,6 +66,23 @@ class CommentPersistenceIntegrationTest {
         assertThat(savedComment.get("BACAAN_ID")).isEqualTo("bacaan-1");
         assertThat(savedComment.get("CONTENT")).isEqualTo("Komentar tersimpan ke database");
         assertThat(savedComment.get("CREATED_AT")).isNotNull();
+    }
+
+    @Test
+    void getCommentsReturnsPersistedRows() throws Exception {
+        CommentCreatedEvent event = commentService.createComment(
+            "user-2",
+            "bacaan-2",
+            "Komentar untuk endpoint get"
+        );
+
+        mockMvc.perform(get("/api/forum/comments").queryParam("bacaanId", "bacaan-2"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].commentId").value(event.commentId()))
+            .andExpect(jsonPath("$[0].userId").value("user-2"))
+            .andExpect(jsonPath("$[0].bacaanId").value("bacaan-2"))
+            .andExpect(jsonPath("$[0].commentContent").value("Komentar untuk endpoint get"))
+            .andExpect(jsonPath("$[0].timestamp").exists());
     }
 }
 

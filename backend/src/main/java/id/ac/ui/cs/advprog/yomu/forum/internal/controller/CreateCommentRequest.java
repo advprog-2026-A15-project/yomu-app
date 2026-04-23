@@ -5,7 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 public record CreateCommentRequest(
     @NotBlank String userId,
     @NotBlank String bacaanId,
-    @NotBlank String commentContent
+    @NotBlank String commentContent,
+    String parentComment
 ) {
 }
 

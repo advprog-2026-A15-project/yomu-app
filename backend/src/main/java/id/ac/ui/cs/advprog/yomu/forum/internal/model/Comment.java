@@ -26,6 +26,9 @@ public class Comment {
     @Column(name = "bacaan_id", nullable = false)
     private String bacaanId;
 
+    @Column(name = "parent_comment", nullable = false)
+    private String parentComment = "root";
+
     @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
@@ -36,11 +39,21 @@ public class Comment {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        if (this.parentComment == null || this.parentComment.isBlank()) {
+            this.parentComment = "root";
+        }
     }
 
     public Comment(String userId, String bacaanId, String content) {
         this.userId = userId;
         this.bacaanId = bacaanId;
+        this.content = content;
+    }
+
+    public Comment(String userId, String bacaanId, String parentComment, String content) {
+        this.userId = userId;
+        this.bacaanId = bacaanId;
+        this.parentComment = (parentComment == null || parentComment.isBlank()) ? "root" : parentComment;
         this.content = content;
     }
 }

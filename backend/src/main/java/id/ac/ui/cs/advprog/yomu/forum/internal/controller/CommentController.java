@@ -28,7 +28,12 @@ public class CommentController {
 	@PostMapping
 	public ResponseEntity<CommentCreatedEvent> createComment(@Valid @RequestBody CreateCommentRequest request) {
 		return ResponseEntity.status(HttpStatus.CREATED)
-			.body(commentService.createComment(request.userId(), request.bacaanId(), request.commentContent()));
+			.body(commentService.createComment(
+				request.userId(),
+				request.bacaanId(),
+				request.commentContent(),
+				request.parentComment()
+			));
 	}
 
 	@GetMapping

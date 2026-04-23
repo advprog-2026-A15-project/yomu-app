@@ -23,6 +23,7 @@ Menyediakan daftar komentar forum agar modul lain bisa membaca komentar tanpa me
   - `commentId` (`String`): identifier unik komentar.
   - `userId` (`String`): identifier user pembuat komentar.
   - `bacaanId` (`String`): identifier bacaan yang dikomentari.
+  - `parentComment` (`String`): identifier komentar induk; bernilai `root` untuk komentar top-level.
   - `commentContent` (`String`): isi komentar.
   - `timestamp` (`Instant`): waktu komentar dibuat dalam format ISO-8601 UTC.
 
@@ -48,6 +49,7 @@ GET /api/forum/comments?bacaanId=299bc3b7-3bb7-4dae-8d9a-621fd072594f
     "commentId": "f8d0f6df-3c31-4a4c-8b5d-9481d36d57ce",
     "userId": "91f88e2b-4aa2-4e0b-93fb-31cb0e0c0a2a",
     "bacaanId": "299bc3b7-3bb7-4dae-8d9a-621fd072594f",
+    "parentComment": "root",
     "commentContent": "Materinya sangat membantu.",
     "timestamp": "2026-04-23T10:00:00Z"
   }

@@ -37,10 +37,11 @@ class CommentControllerTest {
 
     @Test
     void createCommentReturnsJsonPayloadWithExpectedFields() throws Exception {
-        when(commentService.createComment("user-1", "bacaan-1", "Komentar pertama"))
+        when(commentService.createComment("user-1", "bacaan-1", "Komentar pertama", "root"))
             .thenReturn(new CommentCreatedEvent(
                 "user-1",
                 "bacaan-1",
+                "root",
                 "comment-123",
                 "Komentar pertama",
                 Instant.parse("2026-04-23T10:00:00Z")
@@ -52,15 +53,19 @@ class CommentControllerTest {
                     {
                       "userId": "user-1",
                       "bacaanId": "bacaan-1",
-                      "commentContent": "Komentar pertama"
+                      "commentContent": "Komentar pertama",
+                      "parentComment": "root"
                     }
                     """))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.userId").value("user-1"))
             .andExpect(jsonPath("$.bacaanId").value("bacaan-1"))
+            .andExpect(jsonPath("$.parentComment").value("root"))
             .andExpect(jsonPath("$.commentId").value("comment-123"))
             .andExpect(jsonPath("$.commentContent").value("Komentar pertama"))
             .andExpect(jsonPath("$.timestamp").value("2026-04-23T10:00:00Z"));
+
+        verify(commentService).createComment("user-1", "bacaan-1", "Komentar pertama", "root");
     }
 
     @Test
@@ -70,6 +75,7 @@ class CommentControllerTest {
                 "comment-123",
                 "user-1",
                 "bacaan-1",
+                "root",
                 "Komentar pertama",
                 Instant.parse("2026-04-23T10:00:00Z")
             )
@@ -80,6 +86,7 @@ class CommentControllerTest {
             .andExpect(jsonPath("$[0].commentId").value("comment-123"))
             .andExpect(jsonPath("$[0].userId").value("user-1"))
             .andExpect(jsonPath("$[0].bacaanId").value("bacaan-1"))
+            .andExpect(jsonPath("$[0].parentComment").value("root"))
             .andExpect(jsonPath("$[0].commentContent").value("Komentar pertama"))
             .andExpect(jsonPath("$[0].timestamp").value("2026-04-23T10:00:00Z"));
 
@@ -96,6 +103,35 @@ class CommentControllerTest {
             .andExpect(jsonPath("$").isEmpty());
 
         verify(commentService).listComments("bacaan-1");
+    }
+
+    @Test
+    void createCommentWithParentCommentReturnsReplyPayload() throws Exception {
+        when(commentService.createComment("user-2", "bacaan-1", "Komentar balasan", "comment-parent-1"))
+            .thenReturn(new CommentCreatedEvent(
+                "user-2",
+                "bacaan-1",
+                "comment-parent-1",
+                "comment-456",
+                "Komentar balasan",
+                Instant.parse("2026-04-23T10:00:01Z")
+            ));
+
+        mockMvc.perform(post("/api/forum/comments")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "userId": "user-2",
+                      "bacaanId": "bacaan-1",
+                      "commentContent": "Komentar balasan",
+                      "parentComment": "comment-parent-1"
+                    }
+                    """))
+            .andExpect(status().isCreated())
+            .andExpect(jsonPath("$.parentComment").value("comment-parent-1"))
+            .andExpect(jsonPath("$.commentId").value("comment-456"));
+
+        verify(commentService).createComment("user-2", "bacaan-1", "Komentar balasan", "comment-parent-1");
     }
 }
 

@@ -6,6 +6,7 @@ public record CommentResponse(
     String commentId,
     String userId,
     String bacaanId,
+    String parentComment,
     String commentContent,
     Instant timestamp
 ) {

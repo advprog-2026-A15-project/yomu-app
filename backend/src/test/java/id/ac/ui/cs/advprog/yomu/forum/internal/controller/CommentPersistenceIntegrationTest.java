@@ -50,6 +50,7 @@ class CommentPersistenceIntegrationTest {
 
         assertThat(event.userId()).isEqualTo("user-1");
         assertThat(event.bacaanId()).isEqualTo("bacaan-1");
+        assertThat(event.parentComment()).isEqualTo("root");
         assertThat(event.commentContent()).isEqualTo("Komentar tersimpan ke database");
         assertThat(event.commentId()).isNotBlank();
 
@@ -57,15 +58,42 @@ class CommentPersistenceIntegrationTest {
         assertThat(rowCount).isEqualTo(1);
 
         Map<String, Object> savedComment = forumJdbcTemplate.queryForMap(
-            "SELECT id, user_id, bacaan_id, content, created_at FROM comments WHERE id = ?",
+            "SELECT id, user_id, bacaan_id, parent_comment, content, created_at FROM comments WHERE id = ?",
             event.commentId()
         );
 
         assertThat(savedComment.get("ID")).isEqualTo(event.commentId());
         assertThat(savedComment.get("USER_ID")).isEqualTo("user-1");
         assertThat(savedComment.get("BACAAN_ID")).isEqualTo("bacaan-1");
+        assertThat(savedComment.get("PARENT_COMMENT")).isEqualTo("root");
         assertThat(savedComment.get("CONTENT")).isEqualTo("Komentar tersimpan ke database");
         assertThat(savedComment.get("CREATED_AT")).isNotNull();
+    }
+
+    @Test
+    void createReplyStoresParentCommentInDatabase() {
+        CommentCreatedEvent parentEvent = commentService.createComment(
+            "user-parent",
+            "bacaan-2",
+            "Komentar induk"
+        );
+
+        CommentCreatedEvent replyEvent = commentService.createComment(
+            "user-reply",
+            "bacaan-2",
+            "Komentar balasan",
+            parentEvent.commentId()
+        );
+
+        assertThat(replyEvent.parentComment()).isEqualTo(parentEvent.commentId());
+
+        Map<String, Object> savedReply = forumJdbcTemplate.queryForMap(
+            "SELECT id, user_id, bacaan_id, parent_comment, content, created_at FROM comments WHERE id = ?",
+            replyEvent.commentId()
+        );
+
+        assertThat(savedReply.get("PARENT_COMMENT")).isEqualTo(parentEvent.commentId());
+        assertThat(savedReply.get("CONTENT")).isEqualTo("Komentar balasan");
     }
 
     @Test
@@ -81,6 +109,7 @@ class CommentPersistenceIntegrationTest {
             .andExpect(jsonPath("$[0].commentId").value(event.commentId()))
             .andExpect(jsonPath("$[0].userId").value("user-2"))
             .andExpect(jsonPath("$[0].bacaanId").value("bacaan-2"))
+            .andExpect(jsonPath("$[0].parentComment").value("root"))
             .andExpect(jsonPath("$[0].commentContent").value("Komentar untuk endpoint get"))
             .andExpect(jsonPath("$[0].timestamp").exists());
     }

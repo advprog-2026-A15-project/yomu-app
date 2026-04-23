@@ -10,15 +10,18 @@ import org.springframework.stereotype.Repository;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Repository
 public class JdbcCommentRepository implements CommentRepository {
 
     private static final RowMapper<Comment> COMMENT_ROW_MAPPER = (rs, rowNum) -> {
+        String parentComment = rs.getString("parent_comment");
         Comment comment = new Comment(
             rs.getString("user_id"),
             rs.getString("bacaan_id"),
+            parentComment == null || parentComment.isBlank() ? "root" : parentComment,
             rs.getString("content")
         );
         comment.setId(rs.getString("id"));
@@ -39,10 +42,12 @@ public class JdbcCommentRepository implements CommentRepository {
                 id VARCHAR(36) PRIMARY KEY,
                 user_id VARCHAR(255) NOT NULL,
                 bacaan_id VARCHAR(255) NOT NULL,
+                parent_comment VARCHAR(255) NOT NULL DEFAULT 'root',
                 content TEXT NOT NULL,
                 created_at TIMESTAMP NOT NULL
             )
             """);
+        jdbcTemplate.execute("ALTER TABLE comments ADD COLUMN IF NOT EXISTS parent_comment VARCHAR(255) NOT NULL DEFAULT 'root'");
     }
 
     @Override
@@ -55,10 +60,11 @@ public class JdbcCommentRepository implements CommentRepository {
         }
 
         jdbcTemplate.update(
-            "INSERT INTO comments (id, user_id, bacaan_id, content, created_at) VALUES (?, ?, ?, ?, ?)",
+            "INSERT INTO comments (id, user_id, bacaan_id, parent_comment, content, created_at) VALUES (?, ?, ?, ?, ?, ?)",
             comment.getId(),
             comment.getUserId(),
             comment.getBacaanId(),
+            comment.getParentComment(),
             comment.getContent(),
             Timestamp.valueOf(comment.getCreatedAt())
         );
@@ -66,9 +72,18 @@ public class JdbcCommentRepository implements CommentRepository {
     }
 
     @Override
+    public Optional<Comment> findById(String id) {
+        return jdbcTemplate.query(
+            "SELECT id, user_id, bacaan_id, parent_comment, content, created_at FROM comments WHERE id = ?",
+            COMMENT_ROW_MAPPER,
+            id
+        ).stream().findFirst();
+    }
+
+    @Override
     public List<Comment> findAll() {
         return jdbcTemplate.query(
-            "SELECT id, user_id, bacaan_id, content, created_at FROM comments ORDER BY created_at DESC",
+            "SELECT id, user_id, bacaan_id, parent_comment, content, created_at FROM comments ORDER BY created_at DESC",
             COMMENT_ROW_MAPPER
         );
     }
@@ -76,7 +91,7 @@ public class JdbcCommentRepository implements CommentRepository {
     @Override
     public List<Comment> findByBacaanId(String bacaanId) {
         return jdbcTemplate.query(
-            "SELECT id, user_id, bacaan_id, content, created_at FROM comments WHERE bacaan_id = ? ORDER BY created_at DESC",
+            "SELECT id, user_id, bacaan_id, parent_comment, content, created_at FROM comments WHERE bacaan_id = ? ORDER BY created_at DESC",
             COMMENT_ROW_MAPPER,
             bacaanId
         );

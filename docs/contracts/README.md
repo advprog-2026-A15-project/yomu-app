@@ -18,5 +18,6 @@ Aturan umum:
 
 ## HTTP API Contracts
 
-- `GET /api/forum/comments`
+- `POST /api/forum/comments` (mendukung `parentComment` untuk reply)
+- `GET /api/forum/comments` (mendukung `parentComment` pada response dan reply nested lewat `POST` komentar)
 

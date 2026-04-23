@@ -6,7 +6,11 @@ import java.util.List;
 
 public interface CommentService {
 
-	CommentCreatedEvent createComment(String userId, String bacaanId, String commentContent);
+	default CommentCreatedEvent createComment(String userId, String bacaanId, String commentContent) {
+		return createComment(userId, bacaanId, commentContent, "root");
+	}
+
+	CommentCreatedEvent createComment(String userId, String bacaanId, String commentContent, String parentComment);
 
 	List<CommentResponse> listComments(String bacaanId);
 }

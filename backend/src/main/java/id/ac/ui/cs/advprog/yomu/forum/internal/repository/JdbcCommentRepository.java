@@ -81,6 +81,20 @@ public class JdbcCommentRepository implements CommentRepository {
     }
 
     @Override
+    public int updateContentById(String id, String content) {
+        return jdbcTemplate.update(
+            "UPDATE comments SET content = ? WHERE id = ?",
+            content,
+            id
+        );
+    }
+
+    @Override
+    public int deleteById(String id) {
+        return jdbcTemplate.update("DELETE FROM comments WHERE id = ?", id);
+    }
+
+    @Override
     public List<Comment> findAll() {
         return jdbcTemplate.query(
             "SELECT id, user_id, bacaan_id, parent_comment, content, created_at FROM comments ORDER BY created_at DESC",

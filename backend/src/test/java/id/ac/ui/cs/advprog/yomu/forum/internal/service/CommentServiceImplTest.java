@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.yomu.forum.internal.service;
 
 import id.ac.ui.cs.advprog.yomu.forum.CommentCreatedEvent;
+import id.ac.ui.cs.advprog.yomu.forum.CommentDeletedEvent;
+import id.ac.ui.cs.advprog.yomu.forum.CommentUpdatedEvent;
 import id.ac.ui.cs.advprog.yomu.forum.internal.model.Comment;
 import id.ac.ui.cs.advprog.yomu.forum.internal.repository.CommentRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +23,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -206,6 +210,74 @@ class CommentServiceImplTest {
         assertThat(result).hasSize(1);
         assertThat(result.getFirst().commentId()).isEqualTo("comment-orphan");
         assertThat(result.getFirst().children()).isEmpty();
+    }
+
+    @Test
+    void updateCommentReturnsAndPublishesCommentUpdatedEvent() {
+        Comment existingComment = new Comment("user-1", "bacaan-1", "root", "Konten lama");
+        existingComment.setId("comment-123");
+        when(commentRepository.findById("comment-123")).thenReturn(java.util.Optional.of(existingComment));
+        when(commentRepository.updateContentById("comment-123", "Konten baru")).thenReturn(1);
+
+        CommentUpdatedEvent result = commentService.updateComment("comment-123", "Konten baru");
+
+        assertThat(result).isEqualTo(new CommentUpdatedEvent(
+            "user-1",
+            "bacaan-1",
+            "root",
+            "comment-123",
+            "Konten baru",
+            Instant.parse("2026-04-23T10:00:00Z")
+        ));
+        verify(commentRepository).updateContentById("comment-123", "Konten baru");
+        verify(eventPublisher).publishEvent(result);
+    }
+
+    @Test
+    void updateCommentThrowsNotFoundWhenCommentMissing() {
+        when(commentRepository.findById("missing")).thenReturn(java.util.Optional.empty());
+
+        ResponseStatusException exception = org.junit.jupiter.api.Assertions.assertThrows(
+            ResponseStatusException.class,
+            () -> commentService.updateComment("missing", "Konten baru")
+        );
+
+        assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        verify(commentRepository, never()).updateContentById(eq("missing"), any());
+    }
+
+    @Test
+    void deleteCommentReturnsAndPublishesCommentDeletedEvent() {
+        Comment existingComment = new Comment("user-1", "bacaan-1", "root", "Komentar dihapus");
+        existingComment.setId("comment-123");
+        when(commentRepository.findById("comment-123")).thenReturn(java.util.Optional.of(existingComment));
+        when(commentRepository.deleteById("comment-123")).thenReturn(1);
+
+        CommentDeletedEvent result = commentService.deleteComment("comment-123");
+
+        assertThat(result).isEqualTo(new CommentDeletedEvent(
+            "user-1",
+            "bacaan-1",
+            "root",
+            "comment-123",
+            "Komentar dihapus",
+            Instant.parse("2026-04-23T10:00:00Z")
+        ));
+        verify(commentRepository).deleteById("comment-123");
+        verify(eventPublisher).publishEvent(result);
+    }
+
+    @Test
+    void deleteCommentThrowsNotFoundWhenCommentMissing() {
+        when(commentRepository.findById("missing")).thenReturn(java.util.Optional.empty());
+
+        ResponseStatusException exception = org.junit.jupiter.api.Assertions.assertThrows(
+            ResponseStatusException.class,
+            () -> commentService.deleteComment("missing")
+        );
+
+        assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        verify(commentRepository, never()).deleteById("missing");
     }
 }
 

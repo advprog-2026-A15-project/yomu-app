@@ -11,6 +11,10 @@ public interface CommentRepository {
 
     Optional<Comment> findById(String id);
 
+    int updateContentById(String id, String content);
+
+    int deleteById(String id);
+
     List<Comment> findAll();
 
     List<Comment> findByBacaanId(String bacaanId);

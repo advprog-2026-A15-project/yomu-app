@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.yomu.forum.internal.service;
 
 import id.ac.ui.cs.advprog.yomu.forum.CommentCreatedEvent;
+import id.ac.ui.cs.advprog.yomu.forum.CommentDeletedEvent;
+import id.ac.ui.cs.advprog.yomu.forum.CommentUpdatedEvent;
 import id.ac.ui.cs.advprog.yomu.forum.internal.model.Comment;
 import id.ac.ui.cs.advprog.yomu.forum.internal.repository.CommentRepository;
 import org.springframework.context.ApplicationEventPublisher;
@@ -58,6 +60,46 @@ public class CommentServiceImpl implements CommentService {
 			savedComment.getParentComment(),
 			savedComment.getId(),
 			savedComment.getContent(),
+			timestamp
+		);
+		eventPublisher.publishEvent(event);
+		return event;
+	}
+
+	@Override
+	@Transactional(transactionManager = "forumTransactionManager")
+	public CommentUpdatedEvent updateComment(String commentId, String commentContent) {
+		Comment existingComment = getCommentOrThrow(commentId);
+        Instant timestamp = clock.instant();
+
+		commentRepository.updateContentById(commentId, commentContent);
+
+		CommentUpdatedEvent event = new CommentUpdatedEvent(
+			existingComment.getUserId(),
+			existingComment.getBacaanId(),
+			existingComment.getParentComment(),
+			commentId,
+			commentContent,
+			timestamp
+		);
+		eventPublisher.publishEvent(event);
+		return event;
+	}
+
+	@Override
+	@Transactional(transactionManager = "forumTransactionManager")
+	public CommentDeletedEvent deleteComment(String commentId) {
+		Comment existingComment = getCommentOrThrow(commentId);
+        Instant timestamp = clock.instant();
+
+		commentRepository.deleteById(commentId);
+
+		CommentDeletedEvent event = new CommentDeletedEvent(
+			existingComment.getUserId(),
+			existingComment.getBacaanId(),
+			existingComment.getParentComment(),
+			existingComment.getId(),
+			existingComment.getContent(),
 			timestamp
 		);
 		eventPublisher.publishEvent(event);
@@ -148,5 +190,10 @@ public class CommentServiceImpl implements CommentService {
 		if (!bacaanId.equals(parent.getBacaanId())) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parent comment must belong to the same bacaan");
 		}
+	}
+
+	private Comment getCommentOrThrow(String commentId) {
+		return commentRepository.findById(commentId)
+			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
 	}
 }

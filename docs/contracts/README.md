@@ -15,10 +15,14 @@ Aturan umum:
 - `learning.LearningCompletedEvent`
 - `achievements.AchievementUnlockedEvent`
 - `forum.CommentCreatedEvent`
+- `forum.CommentUpdatedEvent`
+- `forum.CommentDeletedEvent`
 
 ## HTTP API Contracts
 
 - `POST /api/forum/comments` (mendukung `parentComment` untuk reply)
 - `GET /api/forum/comments` (mendukung `parentComment` pada response dan reply nested lewat `POST` komentar)
 - `GET /api/forum/comments/tree` (mengembalikan komentar dalam struktur nested)
+- `PUT /api/forum/comments/{commentId}` (memperbarui isi komentar)
+- `DELETE /api/forum/comments/{commentId}` (menghapus komentar)
 

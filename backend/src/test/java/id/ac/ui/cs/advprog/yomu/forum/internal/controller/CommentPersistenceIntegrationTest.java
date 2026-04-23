@@ -14,7 +14,9 @@ import id.ac.ui.cs.advprog.yomu.forum.internal.service.CommentService;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -133,6 +135,67 @@ class CommentPersistenceIntegrationTest {
             .andExpect(jsonPath("$[0].commentId").value(parentEvent.commentId()))
             .andExpect(jsonPath("$[0].children[0].commentId").value(replyEvent.commentId()))
             .andExpect(jsonPath("$[0].children[0].parentComment").value(parentEvent.commentId()));
+    }
+
+    @Test
+    void updateCommentUpdatesStoredContent() {
+        CommentCreatedEvent created = commentService.createComment(
+            "user-1",
+            "bacaan-edit",
+            "Konten awal"
+        );
+
+        commentService.updateComment(created.commentId(), "Konten setelah edit");
+
+        String updatedContent = forumJdbcTemplate.queryForObject(
+            "SELECT content FROM comments WHERE id = ?",
+            String.class,
+            created.commentId()
+        );
+        assertThat(updatedContent).isEqualTo("Konten setelah edit");
+    }
+
+    @Test
+    void deleteCommentRemovesStoredRow() {
+        CommentCreatedEvent created = commentService.createComment(
+            "user-1",
+            "bacaan-delete",
+            "Komentar untuk dihapus"
+        );
+
+        commentService.deleteComment(created.commentId());
+
+        Integer count = forumJdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM comments WHERE id = ?",
+            Integer.class,
+            created.commentId()
+        );
+        assertThat(count).isEqualTo(0);
+    }
+
+    @Test
+    void updateAndDeleteEndpointsReturnEventPayloads() throws Exception {
+        CommentCreatedEvent created = commentService.createComment(
+            "user-endpoint",
+            "bacaan-endpoint",
+            "Komentar endpoint"
+        );
+
+        mockMvc.perform(put("/api/forum/comments/{commentId}", created.commentId())
+                .contentType("application/json")
+                .content("""
+                    {
+                      "commentContent": "Komentar endpoint edit"
+                    }
+                    """))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.commentId").value(created.commentId()))
+            .andExpect(jsonPath("$.commentContent").value("Komentar endpoint edit"));
+
+        mockMvc.perform(delete("/api/forum/comments/{commentId}", created.commentId()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.commentId").value(created.commentId()))
+            .andExpect(jsonPath("$.commentContent").value("Komentar endpoint edit"));
     }
 }
 

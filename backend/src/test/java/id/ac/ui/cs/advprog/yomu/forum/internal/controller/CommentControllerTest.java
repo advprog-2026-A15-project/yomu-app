@@ -1,6 +1,8 @@
 package id.ac.ui.cs.advprog.yomu.forum.internal.controller;
 
 import id.ac.ui.cs.advprog.yomu.forum.CommentCreatedEvent;
+import id.ac.ui.cs.advprog.yomu.forum.CommentDeletedEvent;
+import id.ac.ui.cs.advprog.yomu.forum.CommentUpdatedEvent;
 import id.ac.ui.cs.advprog.yomu.forum.internal.service.CommentResponse;
 import id.ac.ui.cs.advprog.yomu.forum.internal.service.CommentService;
 import id.ac.ui.cs.advprog.yomu.forum.internal.service.CommentTreeResponse;
@@ -10,16 +12,20 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.Instant;
 import java.util.List;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -176,6 +182,78 @@ class CommentControllerTest {
             .andExpect(jsonPath("$.commentId").value("comment-456"));
 
         verify(commentService).createComment("user-2", "bacaan-1", "Komentar balasan", "comment-parent-1");
+    }
+
+    @Test
+    void updateCommentReturnsUpdatedEventPayload() throws Exception {
+        when(commentService.updateComment("comment-123", "Konten yang sudah diedit"))
+            .thenReturn(new CommentUpdatedEvent(
+                "user-1",
+                "bacaan-1",
+                "root",
+                "comment-123",
+                "Konten yang sudah diedit",
+                Instant.parse("2026-04-23T10:02:00Z")
+            ));
+
+        mockMvc.perform(put("/api/forum/comments/comment-123")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "commentContent": "Konten yang sudah diedit"
+                    }
+                    """))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.commentId").value("comment-123"))
+            .andExpect(jsonPath("$.commentContent").value("Konten yang sudah diedit"))
+            .andExpect(jsonPath("$.timestamp").value("2026-04-23T10:02:00Z"));
+
+        verify(commentService).updateComment("comment-123", "Konten yang sudah diedit");
+    }
+
+    @Test
+    void deleteCommentReturnsDeletedEventPayload() throws Exception {
+        when(commentService.deleteComment("comment-123"))
+            .thenReturn(new CommentDeletedEvent(
+                "user-1",
+                "bacaan-1",
+                "root",
+                "comment-123",
+                "Komentar pertama",
+                Instant.parse("2026-04-23T10:03:00Z")
+            ));
+
+        mockMvc.perform(delete("/api/forum/comments/comment-123"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.commentId").value("comment-123"))
+            .andExpect(jsonPath("$.commentContent").value("Komentar pertama"))
+            .andExpect(jsonPath("$.timestamp").value("2026-04-23T10:03:00Z"));
+
+        verify(commentService).deleteComment("comment-123");
+    }
+
+    @Test
+    void updateCommentReturnsNotFoundWhenCommentMissing() throws Exception {
+        when(commentService.updateComment("missing", "Konten baru"))
+            .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+
+        mockMvc.perform(put("/api/forum/comments/missing")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "commentContent": "Konten baru"
+                    }
+                    """))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteCommentReturnsNotFoundWhenCommentMissing() throws Exception {
+        when(commentService.deleteComment("missing"))
+            .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+
+        mockMvc.perform(delete("/api/forum/comments/missing"))
+            .andExpect(status().isNotFound());
     }
 }
 

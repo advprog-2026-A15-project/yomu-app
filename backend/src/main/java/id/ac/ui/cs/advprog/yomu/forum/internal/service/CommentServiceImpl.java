@@ -13,7 +13,10 @@ import org.springframework.http.HttpStatus;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CommentServiceImpl implements CommentService {
@@ -68,15 +71,70 @@ public class CommentServiceImpl implements CommentService {
 			: commentRepository.findByBacaanId(bacaanId);
 
 		return comments.stream()
-			.map(comment -> new CommentResponse(
-				comment.getId(),
-				comment.getUserId(),
-				comment.getBacaanId(),
-				comment.getParentComment(),
-				comment.getContent(),
-				comment.getCreatedAt().atZone(clock.getZone()).toInstant()
-			))
+			.map(this::toCommentResponse)
 			.toList();
+	}
+
+	@Override
+	public List<CommentTreeResponse> listCommentsTree(String bacaanId) {
+		List<Comment> comments = (bacaanId == null || bacaanId.isBlank())
+			? commentRepository.findAll()
+			: commentRepository.findByBacaanId(bacaanId);
+
+		Map<String, MutableTreeNode> nodesById = new LinkedHashMap<>();
+		for (Comment comment : comments) {
+			nodesById.put(comment.getId(), new MutableTreeNode(comment));
+		}
+
+		List<MutableTreeNode> roots = new ArrayList<>();
+		for (MutableTreeNode node : nodesById.values()) {
+			if ("root".equals(node.comment.getParentComment())) {
+				roots.add(node);
+				continue;
+			}
+
+			MutableTreeNode parent = nodesById.get(node.comment.getParentComment());
+			if (parent == null) {
+				roots.add(node);
+				continue;
+			}
+
+			parent.children.add(node);
+		}
+
+		return roots.stream().map(this::toTreeResponse).toList();
+	}
+
+	private CommentResponse toCommentResponse(Comment comment) {
+		return new CommentResponse(
+			comment.getId(),
+			comment.getUserId(),
+			comment.getBacaanId(),
+			comment.getParentComment(),
+			comment.getContent(),
+			comment.getCreatedAt().atZone(clock.getZone()).toInstant()
+		);
+	}
+
+	private CommentTreeResponse toTreeResponse(MutableTreeNode node) {
+		return new CommentTreeResponse(
+			node.comment.getId(),
+			node.comment.getUserId(),
+			node.comment.getBacaanId(),
+			node.comment.getParentComment(),
+			node.comment.getContent(),
+			node.comment.getCreatedAt().atZone(clock.getZone()).toInstant(),
+			node.children.stream().map(this::toTreeResponse).toList()
+		);
+	}
+
+	private static final class MutableTreeNode {
+		private final Comment comment;
+		private final List<MutableTreeNode> children = new ArrayList<>();
+
+		private MutableTreeNode(Comment comment) {
+			this.comment = comment;
+		}
 	}
 
 	private void validateParentComment(String bacaanId, String parentComment) {

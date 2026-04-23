@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.yomu.forum.internal.controller;
 import id.ac.ui.cs.advprog.yomu.forum.CommentCreatedEvent;
 import id.ac.ui.cs.advprog.yomu.forum.internal.service.CommentResponse;
 import id.ac.ui.cs.advprog.yomu.forum.internal.service.CommentService;
+import id.ac.ui.cs.advprog.yomu.forum.internal.service.CommentTreeResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,5 +40,10 @@ public class CommentController {
 	@GetMapping
 	public List<CommentResponse> getComments(@RequestParam(required = false) String bacaanId) {
 		return commentService.listComments(bacaanId);
+	}
+
+	@GetMapping("/tree")
+	public List<CommentTreeResponse> getCommentsTree(@RequestParam(required = false) String bacaanId) {
+		return commentService.listCommentsTree(bacaanId);
 	}
 }

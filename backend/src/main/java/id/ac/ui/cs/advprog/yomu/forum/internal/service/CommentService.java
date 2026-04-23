@@ -13,4 +13,6 @@ public interface CommentService {
 	CommentCreatedEvent createComment(String userId, String bacaanId, String commentContent, String parentComment);
 
 	List<CommentResponse> listComments(String bacaanId);
+
+	List<CommentTreeResponse> listCommentsTree(String bacaanId);
 }

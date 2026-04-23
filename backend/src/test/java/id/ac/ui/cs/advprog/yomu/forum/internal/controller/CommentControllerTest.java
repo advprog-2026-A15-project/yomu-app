@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.yomu.forum.internal.controller;
 import id.ac.ui.cs.advprog.yomu.forum.CommentCreatedEvent;
 import id.ac.ui.cs.advprog.yomu.forum.internal.service.CommentResponse;
 import id.ac.ui.cs.advprog.yomu.forum.internal.service.CommentService;
+import id.ac.ui.cs.advprog.yomu.forum.internal.service.CommentTreeResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -103,6 +104,49 @@ class CommentControllerTest {
             .andExpect(jsonPath("$").isEmpty());
 
         verify(commentService).listComments("bacaan-1");
+    }
+
+    @Test
+    void getCommentsTreeReturnsNestedJson() throws Exception {
+        when(commentService.listCommentsTree(null)).thenReturn(List.of(
+            new CommentTreeResponse(
+                "comment-root",
+                "user-1",
+                "bacaan-1",
+                "root",
+                "Komentar induk",
+                Instant.parse("2026-04-23T10:00:00Z"),
+                List.of(new CommentTreeResponse(
+                    "comment-reply",
+                    "user-2",
+                    "bacaan-1",
+                    "comment-root",
+                    "Komentar balasan",
+                    Instant.parse("2026-04-23T10:00:01Z"),
+                    List.of()
+                ))
+            )
+        ));
+
+        mockMvc.perform(get("/api/forum/comments/tree"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].commentId").value("comment-root"))
+            .andExpect(jsonPath("$[0].children[0].commentId").value("comment-reply"))
+            .andExpect(jsonPath("$[0].children[0].parentComment").value("comment-root"));
+
+        verify(commentService).listCommentsTree(null);
+    }
+
+    @Test
+    void getCommentsTreeWithBacaanIdUsesFilter() throws Exception {
+        when(commentService.listCommentsTree("bacaan-1")).thenReturn(List.of());
+
+        mockMvc.perform(get("/api/forum/comments/tree").queryParam("bacaanId", "bacaan-1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray())
+            .andExpect(jsonPath("$").isEmpty());
+
+        verify(commentService).listCommentsTree("bacaan-1");
     }
 
     @Test

@@ -162,5 +162,50 @@ class CommentServiceImplTest {
             Instant.parse("2026-04-23T10:00:00Z")
         ));
     }
+
+    @Test
+    void listCommentsTreeBuildsNestedChildren() {
+        Comment root = new Comment("user-1", "bacaan-1", "root", "Komentar induk");
+        root.setId("comment-root");
+        root.setCreatedAt(LocalDateTime.of(2026, 4, 23, 10, 0));
+
+        Comment reply = new Comment("user-2", "bacaan-1", "comment-root", "Komentar balasan");
+        reply.setId("comment-reply");
+        reply.setCreatedAt(LocalDateTime.of(2026, 4, 23, 10, 1));
+
+        when(commentRepository.findAll()).thenReturn(List.of(root, reply));
+
+        List<CommentTreeResponse> result = commentService.listCommentsTree(null);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().commentId()).isEqualTo("comment-root");
+        assertThat(result.getFirst().children()).hasSize(1);
+        assertThat(result.getFirst().children().getFirst().commentId()).isEqualTo("comment-reply");
+    }
+
+    @Test
+    void listCommentsTreeWithFilterUsesRepositoryFilter() {
+        when(commentRepository.findByBacaanId("bacaan-1")).thenReturn(List.of());
+
+        List<CommentTreeResponse> result = commentService.listCommentsTree("bacaan-1");
+
+        assertThat(result).isEmpty();
+        verify(commentRepository).findByBacaanId("bacaan-1");
+    }
+
+    @Test
+    void listCommentsTreePromotesOrphanReplyToRoot() {
+        Comment orphanReply = new Comment("user-2", "bacaan-1", "missing-parent", "Komentar orphan");
+        orphanReply.setId("comment-orphan");
+        orphanReply.setCreatedAt(LocalDateTime.of(2026, 4, 23, 10, 0));
+
+        when(commentRepository.findAll()).thenReturn(List.of(orphanReply));
+
+        List<CommentTreeResponse> result = commentService.listCommentsTree(null);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.getFirst().commentId()).isEqualTo("comment-orphan");
+        assertThat(result.getFirst().children()).isEmpty();
+    }
 }
 

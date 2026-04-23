@@ -113,6 +113,27 @@ class CommentPersistenceIntegrationTest {
             .andExpect(jsonPath("$[0].commentContent").value("Komentar untuk endpoint get"))
             .andExpect(jsonPath("$[0].timestamp").exists());
     }
+
+    @Test
+    void getCommentsTreeReturnsNestedPersistedRows() throws Exception {
+        CommentCreatedEvent parentEvent = commentService.createComment(
+            "user-parent",
+            "bacaan-tree",
+            "Komentar induk tree"
+        );
+        CommentCreatedEvent replyEvent = commentService.createComment(
+            "user-reply",
+            "bacaan-tree",
+            "Komentar balasan tree",
+            parentEvent.commentId()
+        );
+
+        mockMvc.perform(get("/api/forum/comments/tree").queryParam("bacaanId", "bacaan-tree"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].commentId").value(parentEvent.commentId()))
+            .andExpect(jsonPath("$[0].children[0].commentId").value(replyEvent.commentId()))
+            .andExpect(jsonPath("$[0].children[0].parentComment").value(parentEvent.commentId()));
+    }
 }
 
 

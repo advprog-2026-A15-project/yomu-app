@@ -20,4 +20,5 @@ Aturan umum:
 
 - `POST /api/forum/comments` (mendukung `parentComment` untuk reply)
 - `GET /api/forum/comments` (mendukung `parentComment` pada response dan reply nested lewat `POST` komentar)
+- `GET /api/forum/comments/tree` (mengembalikan komentar dalam struktur nested)
 

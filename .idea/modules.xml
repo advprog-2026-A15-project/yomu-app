@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/yomu.iml" filepath="$PROJECT_DIR$/.idea/modules/yomu.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/yomu-app.iml" filepath="$PROJECT_DIR$/.idea/yomu-app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/yomu.main.iml" filepath="$PROJECT_DIR$/.idea/modules/yomu.main.iml" />
     </modules>
   </component>
 </project>

@@ -1,6 +1,6 @@
-# Event Contracts
+# Contracts
 
-Dokumen di folder ini mendefinisikan kontrak event lintas modul pada modular monolith `yomu`.
+Dokumen di folder ini mendefinisikan kontrak antar modul pada modular monolith `yomu`.
 
 Aturan umum:
 
@@ -9,8 +9,20 @@ Aturan umum:
 - Consumer antar modul hanya boleh bergantung pada field yang terdokumentasi di sini.
 - Perubahan breaking harus disertai version baru atau strategi migrasi yang jelas.
 
-Daftar kontrak saat ini:
+## Event Contracts
 
 - `auth.UserRegisteredEvent`
 - `learning.LearningCompletedEvent`
 - `achievements.AchievementUnlockedEvent`
+- `forum.CommentCreatedEvent`
+- `forum.CommentUpdatedEvent`
+- `forum.CommentDeletedEvent`
+
+## HTTP API Contracts
+
+- `POST /api/forum/comments` (mendukung `parentComment` untuk reply)
+- `GET /api/forum/comments` (mendukung `parentComment` pada response dan reply nested lewat `POST` komentar)
+- `GET /api/forum/comments/tree` (mengembalikan komentar dalam struktur nested)
+- `PUT /api/forum/comments/{commentId}` (memperbarui isi komentar)
+- `DELETE /api/forum/comments/{commentId}` (menghapus komentar)
+

@@ -13,6 +13,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -51,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
         
         // Publish event for Modulith
-        eventPublisher.publishEvent(new UserRegisteredEvent(user.getId(), user.getUsername(), user.getEmail()));
+        eventPublisher.publishEvent(new UserRegisteredEvent(user.getId(), user.getUsername(), user.getEmail(), Instant.now()));
 
         String jwtToken = jwtService.generateToken(user);
         return AuthResponse.builder()
@@ -97,7 +98,7 @@ public class AuthServiceImpl implements AuthService {
                             .updatedAt(LocalDateTime.now())
                             .build();
                     userRepository.save(newUser);
-                    eventPublisher.publishEvent(new UserRegisteredEvent(newUser.getId(), newUser.getUsername(), newUser.getEmail()));
+                    eventPublisher.publishEvent(new UserRegisteredEvent(newUser.getId(), newUser.getUsername(), newUser.getEmail(), Instant.now()));
                     return newUser;
                 });
 

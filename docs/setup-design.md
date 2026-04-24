@@ -57,11 +57,6 @@ Aturan berikut perlu diaktifkan di GitHub repository settings:
 - Konfigurasi `LocalDevelopmentSecurityConfig` tidak boleh digunakan di production
 - Pastikan konfigurasi security production (auth/authorization/CSRF) dipisahkan dan hanya aktif di profile production
 
-## Optional cleanup
-
-- File lama `backend/src/main/java/id/ac/ui/cs/advprog/yomu/forum/internal/configuration/TemporarySecurityConfig.java` dapat dihapus jika seluruh tim sudah migrasi ke konfigurasi global
-- Dokumentasi detail perilaku lokal tetap dirujuk dari `docs/LOCAL_SECURITY_CONFIG.md`
-
 ## Frontend design
 
 - Frontend memakai React + Vite

@@ -1,149 +1,160 @@
 package id.ac.ui.cs.advprog.yomu;
 
-import javax.sql.DataSource;
-
 import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.PlatformTransactionManager;
 
-@Configuration(proxyBeanMethods = false)
+import javax.sql.DataSource;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+@Configuration
 public class ModuleDatabaseConfiguration {
 
-    @Bean
-    @ConfigurationProperties("yomu.modules.achievements.datasource")
-    DataSourceProperties achievementsDataSourceProperties() {
-        return new DataSourceProperties();
-    }
+    private static final String ACHIEVEMENTS_SCHEMA = "ACHIEVEMENTS";
+    private static final String AUTH_SCHEMA = "AUTH";
+    private static final String CLAN_SCHEMA = "CLAN";
+    private static final String FORUM_SCHEMA = "FORUM";
+    private static final String LEARNING_SCHEMA = "LEARNING";
+
+    @Value("${spring.datasource.url}")
+    private String jdbcUrl;
+
+    @Value("${spring.datasource.username}")
+    private String username;
+
+    @Value("${spring.datasource.password}")
+    private String password;
+
+    @Value("${spring.datasource.driver-class-name}")
+    private String driverClassName;
+
+    private final Object schemaInitializationLock = new Object();
+
+    private volatile boolean schemasInitialized;
 
     @Bean(name = "achievementsDataSource")
-    HikariDataSource achievementsDataSource(
-        @Qualifier("achievementsDataSourceProperties") DataSourceProperties properties
-    ) {
-        return buildDataSource(properties);
-    }
-
-    @Bean(name = "achievementsTransactionManager")
-    DataSourceTransactionManager achievementsTransactionManager(
-        @Qualifier("achievementsDataSource") DataSource dataSource
-    ) {
-        return new DataSourceTransactionManager(dataSource);
-    }
-
-    @Bean(name = "achievementsJdbcTemplate")
-    JdbcTemplate achievementsJdbcTemplate(
-        @Qualifier("achievementsDataSource") DataSource dataSource
-    ) {
-        return new JdbcTemplate(dataSource);
-    }
-
-    @Bean
-    @ConfigurationProperties("yomu.modules.auth.datasource")
-    DataSourceProperties authDataSourceProperties() {
-        return new DataSourceProperties();
+    public DataSource achievementsDataSource() {
+        return moduleDataSource(ACHIEVEMENTS_SCHEMA);
     }
 
     @Bean(name = "authDataSource")
-    HikariDataSource authDataSource(
-        @Qualifier("authDataSourceProperties") DataSourceProperties properties
-    ) {
-        return buildDataSource(properties);
-    }
-
-    @Bean(name = "authTransactionManager")
-    DataSourceTransactionManager authTransactionManager(
-        @Qualifier("authDataSource") DataSource dataSource
-    ) {
-        return new DataSourceTransactionManager(dataSource);
-    }
-
-    @Bean(name = "authJdbcTemplate")
-    JdbcTemplate authJdbcTemplate(@Qualifier("authDataSource") DataSource dataSource) {
-        return new JdbcTemplate(dataSource);
-    }
-
-    @Bean
-    @ConfigurationProperties("yomu.modules.clan.datasource")
-    DataSourceProperties clanDataSourceProperties() {
-        return new DataSourceProperties();
+    public DataSource authDataSource() {
+        return moduleDataSource(AUTH_SCHEMA);
     }
 
     @Bean(name = "clanDataSource")
-    HikariDataSource clanDataSource(
-        @Qualifier("clanDataSourceProperties") DataSourceProperties properties
-    ) {
-        return buildDataSource(properties);
-    }
-
-    @Bean(name = "clanTransactionManager")
-    DataSourceTransactionManager clanTransactionManager(
-        @Qualifier("clanDataSource") DataSource dataSource
-    ) {
-        return new DataSourceTransactionManager(dataSource);
-    }
-
-    @Bean(name = "clanJdbcTemplate")
-    JdbcTemplate clanJdbcTemplate(@Qualifier("clanDataSource") DataSource dataSource) {
-        return new JdbcTemplate(dataSource);
-    }
-
-    @Bean
-    @ConfigurationProperties("yomu.modules.forum.datasource")
-    DataSourceProperties forumDataSourceProperties() {
-        return new DataSourceProperties();
+    public DataSource clanDataSource() {
+        return moduleDataSource(CLAN_SCHEMA);
     }
 
     @Bean(name = "forumDataSource")
-    HikariDataSource forumDataSource(
-        @Qualifier("forumDataSourceProperties") DataSourceProperties properties
-    ) {
-        return buildDataSource(properties);
-    }
-
-    @Bean(name = "forumTransactionManager")
-    DataSourceTransactionManager forumTransactionManager(
-        @Qualifier("forumDataSource") DataSource dataSource
-    ) {
-        return new DataSourceTransactionManager(dataSource);
-    }
-
-    @Bean(name = "forumJdbcTemplate")
-    JdbcTemplate forumJdbcTemplate(@Qualifier("forumDataSource") DataSource dataSource) {
-        return new JdbcTemplate(dataSource);
-    }
-
-    @Bean
-    @ConfigurationProperties("yomu.modules.learning.datasource")
-    DataSourceProperties learningDataSourceProperties() {
-        return new DataSourceProperties();
+    public DataSource forumDataSource() {
+        return moduleDataSource(FORUM_SCHEMA);
     }
 
     @Bean(name = "learningDataSource")
-    HikariDataSource learningDataSource(
-        @Qualifier("learningDataSourceProperties") DataSourceProperties properties
-    ) {
-        return buildDataSource(properties);
+    public DataSource learningDataSource() {
+        return moduleDataSource(LEARNING_SCHEMA);
     }
 
-    @Bean(name = "learningTransactionManager")
-    DataSourceTransactionManager learningTransactionManager(
-        @Qualifier("learningDataSource") DataSource dataSource
-    ) {
-        return new DataSourceTransactionManager(dataSource);
-    }
-
-    @Bean(name = "learningJdbcTemplate")
-    JdbcTemplate learningJdbcTemplate(@Qualifier("learningDataSource") DataSource dataSource) {
+    @Bean(name = "achievementsJdbcTemplate")
+    public JdbcTemplate achievementsJdbcTemplate(@Qualifier("achievementsDataSource") DataSource dataSource) {
         return new JdbcTemplate(dataSource);
     }
 
-    private HikariDataSource buildDataSource(DataSourceProperties properties) {
-        return properties.initializeDataSourceBuilder()
+    @Bean(name = "authJdbcTemplate")
+    public JdbcTemplate authJdbcTemplate(@Qualifier("authDataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+
+    @Bean(name = "clanJdbcTemplate")
+    public JdbcTemplate clanJdbcTemplate(@Qualifier("clanDataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+
+    @Bean(name = "forumJdbcTemplate")
+    public JdbcTemplate forumJdbcTemplate(@Qualifier("forumDataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+
+    @Bean(name = "learningJdbcTemplate")
+    public JdbcTemplate learningJdbcTemplate(@Qualifier("learningDataSource") DataSource dataSource) {
+        return new JdbcTemplate(dataSource);
+    }
+
+    @Bean(name = {"transactionManager", "forumTransactionManager"})
+    public PlatformTransactionManager transactionManager(@Qualifier("forumDataSource") DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+    }
+
+    @Bean(name = "achievementsTransactionManager")
+    public PlatformTransactionManager achievementsTransactionManager(@Qualifier("achievementsDataSource") DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+    }
+
+    @Bean(name = "authTransactionManager")
+    public PlatformTransactionManager authTransactionManager(@Qualifier("authDataSource") DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+    }
+
+    @Bean(name = "clanTransactionManager")
+    public PlatformTransactionManager clanTransactionManager(@Qualifier("clanDataSource") DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+    }
+
+    @Bean(name = "learningTransactionManager")
+    public PlatformTransactionManager learningTransactionManager(@Qualifier("learningDataSource") DataSource dataSource) {
+        return new DataSourceTransactionManager(dataSource);
+    }
+
+    private DataSource moduleDataSource(String schema) {
+        ensureSchemasCreated();
+
+        HikariDataSource dataSource = DataSourceBuilder.create()
             .type(HikariDataSource.class)
+            .url(jdbcUrl)
+            .username(username)
+            .password(password)
+            .driverClassName(driverClassName)
             .build();
+        dataSource.setPoolName(schema + "Pool");
+        dataSource.setSchema(schema);
+        return dataSource;
+    }
+
+    private void ensureSchemasCreated() {
+        if (schemasInitialized) {
+            return;
+        }
+
+        synchronized (schemaInitializationLock) {
+            if (schemasInitialized) {
+                return;
+            }
+
+            try (Connection connection = DriverManager.getConnection(jdbcUrl, username, password);
+                 Statement statement = connection.createStatement()) {
+                statement.execute("CREATE SCHEMA IF NOT EXISTS ACHIEVEMENTS");
+                statement.execute("CREATE SCHEMA IF NOT EXISTS AUTH");
+                statement.execute("CREATE SCHEMA IF NOT EXISTS CLAN");
+                statement.execute("CREATE SCHEMA IF NOT EXISTS FORUM");
+                statement.execute("CREATE SCHEMA IF NOT EXISTS LEARNING");
+                schemasInitialized = true;
+            } catch (SQLException exception) {
+                throw new IllegalStateException("Failed to initialize module schemas", exception);
+            }
+        }
     }
 }
+
+
+

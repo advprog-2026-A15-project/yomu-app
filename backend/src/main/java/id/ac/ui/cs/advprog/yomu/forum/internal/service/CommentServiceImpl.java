@@ -38,13 +38,13 @@ public class CommentServiceImpl implements CommentService {
 	}
 
 	@Override
-	@Transactional(transactionManager = "forumTransactionManager")
+	@Transactional(transactionManager = "transactionManager")
 	public CommentCreatedEvent createComment(String userId, String bacaanId, String commentContent) {
 		return createComment(userId, bacaanId, commentContent, "root");
 	}
 
 	@Override
-	@Transactional(transactionManager = "forumTransactionManager")
+	@Transactional(transactionManager = "transactionManager")
 	public CommentCreatedEvent createComment(String userId, String bacaanId, String commentContent, String parentComment) {
 		String normalizedParent = (parentComment == null || parentComment.isBlank()) ? "root" : parentComment;
 		validateParentComment(bacaanId, normalizedParent);
@@ -67,7 +67,7 @@ public class CommentServiceImpl implements CommentService {
 	}
 
 	@Override
-	@Transactional(transactionManager = "forumTransactionManager")
+	@Transactional(transactionManager = "transactionManager")
 	public CommentUpdatedEvent updateComment(String commentId, String commentContent) {
 		Comment existingComment = getCommentOrThrow(commentId);
         Instant timestamp = clock.instant();
@@ -87,7 +87,7 @@ public class CommentServiceImpl implements CommentService {
 	}
 
 	@Override
-	@Transactional(transactionManager = "forumTransactionManager")
+	@Transactional(transactionManager = "transactionManager")
 	public CommentDeletedEvent deleteComment(String commentId) {
 		Comment existingComment = getCommentOrThrow(commentId);
         Instant timestamp = clock.instant();

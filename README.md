@@ -22,7 +22,7 @@ cd backend
 ./gradlew bootRun
 ```
 
-`bootRun` default ke profile `local`. Backend akan membuat database H2 terpisah untuk setiap modul di folder `backend/.localdb/`.
+`bootRun` default ke profile `local`. Backend akan membuat satu database H2 di folder `backend/.localdb/`, lalu memakai schema terpisah untuk modul `achievements`, `auth`, `clan`, `forum`, dan `learning`.
 
 ### Deploy notes
 
@@ -32,28 +32,19 @@ Untuk deployment backend, aktifkan profile `prod` dan isi environment variable b
 SPRING_PROFILES_ACTIVE=prod
 PORT=8080
 
-YOMU_MODULES_ACHIEVEMENTS_DATASOURCE_URL=jdbc:postgresql://<host>:5432/achievements
-YOMU_MODULES_ACHIEVEMENTS_DATASOURCE_USERNAME=<username>
-YOMU_MODULES_ACHIEVEMENTS_DATASOURCE_PASSWORD=<password>
-
-YOMU_MODULES_AUTH_DATASOURCE_URL=jdbc:postgresql://<host>:5432/auth
-YOMU_MODULES_AUTH_DATASOURCE_USERNAME=<username>
-YOMU_MODULES_AUTH_DATASOURCE_PASSWORD=<password>
-
-YOMU_MODULES_CLAN_DATASOURCE_URL=jdbc:postgresql://<host>:5432/clan
-YOMU_MODULES_CLAN_DATASOURCE_USERNAME=<username>
-YOMU_MODULES_CLAN_DATASOURCE_PASSWORD=<password>
-
-YOMU_MODULES_FORUM_DATASOURCE_URL=jdbc:postgresql://<host>:5432/forum
-YOMU_MODULES_FORUM_DATASOURCE_USERNAME=<username>
-YOMU_MODULES_FORUM_DATASOURCE_PASSWORD=<password>
-
-YOMU_MODULES_LEARNING_DATASOURCE_URL=jdbc:postgresql://<host>:5432/learning
-YOMU_MODULES_LEARNING_DATASOURCE_USERNAME=<username>
-YOMU_MODULES_LEARNING_DATASOURCE_PASSWORD=<password>
+SPRING_DATASOURCE_URL=jdbc:postgresql://<host>:5432/yomu
+SPRING_DATASOURCE_USERNAME=<username>
+SPRING_DATASOURCE_PASSWORD=<password>
+SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
 ```
 
-Tanpa konfigurasi database production di atas, aplikasi backend akan gagal start. Itu sengaja, supaya tiap modul tetap punya database sendiri dan environment deploy tidak diam-diam jatuh ke satu database bersama.
+Database production yang dipakai bersifat shared, tetapi harus memiliki schema berikut terlebih dahulu:
+
+- `achievements`
+- `auth`
+- `clan`
+- `forum`
+- `learning`
 
 ### Arsitektur backend
 
@@ -61,7 +52,7 @@ Backend sekarang diarahkan sebagai modular monolith:
 
 - satu deployment unit
 - modul dipisah di package root: `achievements`, `auth`, `clan`, `forum`, `learning`
-- setiap modul punya datasource, transaction manager, dan `JdbcTemplate` sendiri
+- satu database shared dipakai bersama, tetapi setiap modul memiliki schema, datasource, transaction manager, dan `JdbcTemplate` sendiri
 
 Persistence modul belum diimplementasikan penuh. Repository dan entity masih placeholder, jadi langkah berikutnya adalah menghubungkan tiap repository modul ke datasource miliknya sendiri.
 

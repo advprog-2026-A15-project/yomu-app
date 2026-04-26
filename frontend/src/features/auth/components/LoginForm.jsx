@@ -23,7 +23,7 @@ export const LoginForm = () => {
     try {
       await login(identifier, password);
       navigate('/profile');
-    } catch (err) {
+    } catch {
       // Error is handled by context but we can do extra things if needed
     }
   };

@@ -1,10 +1,12 @@
-package id.ac.ui.cs.advprog.yomu.achievements.internal.model;
+package id.ac.ui.cs.advprog.yomu.achievements.internal.dto;
+
+import id.ac.ui.cs.advprog.yomu.achievements.internal.model.AchievementMetric;
 
 import java.time.Instant;
 import java.util.UUID;
 
-public record Achievement(
-    UUID id,
+public record AchievementResponse(
+    UUID achievementId,
     String code,
     String name,
     String description,

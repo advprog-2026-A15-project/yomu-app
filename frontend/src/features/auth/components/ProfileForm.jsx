@@ -1,31 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import { User, Mail, Lock, Phone, Loader2, Type, AlertTriangle } from 'lucide-react';
 
+const toProfileFormData = (user) => ({
+  username: user?.username || '',
+  email: user?.email || '',
+  phone: user?.phone || '',
+  displayName: user?.displayName || '',
+  password: '',
+});
+
 export const ProfileForm = () => {
   const { user, updateProfile, deleteAccount, isLoading, error } = useAuth();
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    phone: '',
-    displayName: '',
-    password: '',
-  });
+  const [formData, setFormData] = useState(() => toProfileFormData(user));
   const [localError, setLocalError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
-  useEffect(() => {
-    if (user) {
-      setFormData({
-        username: user.username || '',
-        email: user.email || '',
-        phone: user.phone || '',
-        displayName: user.displayName || '',
-        password: '', // Don't pre-fill password
-      });
-    }
-  }, [user]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -53,7 +43,7 @@ export const ProfileForm = () => {
       await updateProfile(updateData);
       setSuccessMsg('Profil berhasil diperbarui!');
       setFormData(prev => ({ ...prev, password: '' })); // clear password field
-    } catch (err) {
+    } catch {
       // Error handled by context
     }
   };

@@ -1,5 +1,6 @@
 import { Routes, Route, Link } from 'react-router-dom'
 import { LoginPage, RegisterPage, ProfilePage } from './features/auth'
+import { AchievementAdminPage, AchievementsPage } from './features/achievements'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
@@ -21,6 +22,7 @@ function Home() {
         <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
           <Link to="/login" className="btn-primary" style={{ textDecoration: 'none' }}>Login</Link>
           <Link to="/register" className="btn-primary" style={{ backgroundColor: '#1e293b', textDecoration: 'none' }}>Register</Link>
+          <Link to="/achievements" className="btn-primary" style={{ backgroundColor: '#0f766e', textDecoration: 'none' }}>Achievement</Link>
         </div>
       </section>
 
@@ -36,6 +38,8 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/profile" element={<ProfilePage />} />
+      <Route path="/achievements" element={<AchievementsPage />} />
+      <Route path="/achievements/admin" element={<AchievementAdminPage />} />
     </Routes>
   )
 }

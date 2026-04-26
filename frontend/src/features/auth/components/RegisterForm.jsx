@@ -36,10 +36,11 @@ export const RegisterForm = () => {
     }
 
     try {
-      const { confirmPassword, ...submitData } = formData;
+      const submitData = { ...formData };
+      delete submitData.confirmPassword;
       await register(submitData);
       navigate('/profile');
-    } catch (err) {
+    } catch {
       // Error handled by context
     }
   };

@@ -1,29 +1,21 @@
-import { createContext, useState, useEffect } from 'react';
+import { useState } from 'react';
 import { authService } from '../services/authService';
+import { AuthContext } from './AuthContextValue';
 
-export const AuthContext = createContext(null);
+const getStoredUser = () => {
+  try {
+    const storedUser = localStorage.getItem('yomu_user');
+    return storedUser ? JSON.parse(storedUser) : null;
+  } catch {
+    localStorage.removeItem('yomu_user');
+    return null;
+  }
+};
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState(getStoredUser);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // Check for saved session on mount
-  useEffect(() => {
-    const checkSession = () => {
-      try {
-        const storedUser = localStorage.getItem('yomu_user');
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-        }
-      } catch (err) {
-        console.error("Failed to parse user session", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    checkSession();
-  }, []);
 
   // Sync user state to localStorage
   const saveSession = (userData) => {
@@ -86,7 +78,7 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       if (!user) throw new Error("Not logged in");
-      const updatedUser = await authService.updateProfile(user.id, updateData);
+      const updatedUser = await authService.updateProfile(updateData);
       saveSession(updatedUser);
       return updatedUser;
     } catch (err) {
@@ -102,7 +94,7 @@ export const AuthProvider = ({ children }) => {
     setError(null);
     try {
       if (!user) throw new Error("Not logged in");
-      await authService.deleteAccount(user.id);
+      await authService.deleteAccount();
       clearSession();
     } catch (err) {
       setError(err.message);

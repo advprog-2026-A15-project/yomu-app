@@ -62,7 +62,7 @@ export const authService = {
     };
   },
 
-  updateProfile: async (userId, updateData) => {
+  updateProfile: async (updateData) => {
     const response = await fetch(`${API_URL}/profile`, {
       method: 'PUT',
       headers: getAuthHeaders(),
@@ -81,7 +81,7 @@ export const authService = {
     };
   },
 
-  deleteAccount: async (userId) => {
+  deleteAccount: async () => {
     const response = await fetch(`${API_URL}/profile`, {
       method: 'DELETE',
       headers: getAuthHeaders(),

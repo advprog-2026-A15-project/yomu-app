@@ -1,7 +1,7 @@
 import { Navigate, Link } from 'react-router-dom';
 import { ProfileForm } from '../components/ProfileForm';
 import { useAuth } from '../hooks/useAuth';
-import { LogOut, Home } from 'lucide-react';
+import { LogOut, Home, Trophy } from 'lucide-react';
 import '../styles/auth.css';
 
 export const ProfilePage = () => {
@@ -26,6 +26,9 @@ export const ProfilePage = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <h1 className="auth-title" style={{ margin: 0, fontSize: '1.5rem' }}>Pengaturan Profil</h1>
           <div style={{ display: 'flex', gap: '1rem' }}>
+            <Link to="/achievements" title="Achievement" style={{ color: 'var(--auth-text-muted)' }}>
+              <Trophy size={24} />
+            </Link>
             <Link to="/" title="Kembali ke Beranda" style={{ color: 'var(--auth-text-muted)' }}>
               <Home size={24} />
             </Link>

@@ -13,6 +13,8 @@ Aturan umum:
 
 - `auth.UserRegisteredEvent`
 - `learning.LearningCompletedEvent`
+- `learning.QuizCompletedEvent`
+- `clan.LeagueActivityEvent`
 - `achievements.AchievementUnlockedEvent`
 - `forum.CommentCreatedEvent`
 - `forum.CommentUpdatedEvent`

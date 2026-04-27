@@ -1,8 +1,6 @@
 import { Routes, Route, Link } from 'react-router-dom'
 import { LoginPage, RegisterPage, ProfilePage } from './features/auth'
 import { AchievementAdminPage, AchievementsPage } from './features/achievements'
-import { JoinClanPage } from './features/clan/pages/JoinClanPage'
-import { MyClanPage } from './features/clan/pages/MyClanPage'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
@@ -12,11 +10,6 @@ function Home() {
   return (
     <>
       <section id="center">
-        <div className="home-top-actions">
-          <Link to="/clans/join" className="btn-primary" style={{ textDecoration: 'none' }}>
-            Join a Clan
-          </Link>
-        </div>
         <div className="hero">
           <img src={heroImg} className="base" width="170" height="179" alt="" />
           <img src={reactLogo} className="framework" alt="React logo" />
@@ -47,8 +40,6 @@ function App() {
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/achievements" element={<AchievementsPage />} />
       <Route path="/achievements/admin" element={<AchievementAdminPage />} />
-      <Route path="/clans/join" element={<JoinClanPage />} />
-      <Route path="/clans/my" element={<MyClanPage />} />
     </Routes>
   )
 }

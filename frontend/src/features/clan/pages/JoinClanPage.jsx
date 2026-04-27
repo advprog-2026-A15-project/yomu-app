@@ -1,15 +1,20 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { clanService } from '../services/clanService';
 import { useAuth } from '../../auth';
 import '../styles/joinClan.css';
 
 export function JoinClanPage() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [clans, setClans] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [joiningClanId, setJoiningClanId] = useState(null);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [newClanName, setNewClanName] = useState('');
+  const [isCreatingClan, setIsCreatingClan] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
   const myClan = useMemo(() => {
@@ -65,6 +70,38 @@ export function JoinClanPage() {
     }
   };
 
+  const handleCreateClan = async (event) => {
+    event.preventDefault();
+
+    if (!user?.id) {
+      setError('Kamu harus login untuk membuat clan.');
+      return;
+    }
+
+    const trimmedClanName = newClanName.trim();
+    if (!trimmedClanName) {
+      setError('Nama clan wajib diisi.');
+      return;
+    }
+
+    setIsCreatingClan(true);
+    setError('');
+    setSuccessMessage('');
+    try {
+      await clanService.createClan(trimmedClanName);
+      setSuccessMessage('Clan berhasil dibuat. Mengarahkan ke Home...');
+      const data = await clanService.listClans();
+      setClans(Array.isArray(data) ? data : []);
+      setIsCreateModalOpen(false);
+      setNewClanName('');
+      navigate('/');
+    } catch (err) {
+      setError(err.message || 'Gagal membuat clan.');
+    } finally {
+      setIsCreatingClan(false);
+    }
+  };
+
   return (
     <main className="join-clan-page">
       <header className="join-clan-header">
@@ -72,16 +109,21 @@ export function JoinClanPage() {
         {myClan ? <span className="join-clan-my-clan-label">My Clan</span> : null}
       </header>
 
-      <section className="join-clan-search-section">
-        <label htmlFor="clan-search">Search Clan</label>
-        <input
-          id="clan-search"
-          type="text"
-          value={searchQuery}
-          onChange={(event) => setSearchQuery(event.target.value)}
-          placeholder="Cari nama clan"
-          autoComplete="off"
-        />
+      <section className="join-clan-toolbar">
+        <div className="join-clan-search-section">
+          <label htmlFor="clan-search">Search Clan</label>
+          <input
+            id="clan-search"
+            type="text"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Cari nama clan"
+            autoComplete="off"
+          />
+        </div>
+        <button type="button" className="btn-primary join-clan-create-trigger" onClick={() => setIsCreateModalOpen(true)}>
+          Create Clan
+        </button>
       </section>
 
       {error ? <p className="join-clan-alert join-clan-alert-error">{error}</p> : null}
@@ -123,6 +165,41 @@ export function JoinClanPage() {
           </ul>
         ) : null}
       </section>
+
+      {isCreateModalOpen ? (
+        <div className="join-clan-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="create-clan-title">
+          <div className="join-clan-modal">
+            <h2 id="create-clan-title">Create Clan</h2>
+            <form onSubmit={handleCreateClan} className="join-clan-create-form">
+              <label htmlFor="new-clan-name">Nama Clan</label>
+              <input
+                id="new-clan-name"
+                type="text"
+                value={newClanName}
+                onChange={(event) => setNewClanName(event.target.value)}
+                placeholder="Masukkan nama clan"
+                maxLength={40}
+              />
+              <div className="join-clan-modal-actions">
+                <button
+                  type="button"
+                  className="join-clan-cancel-btn"
+                  onClick={() => {
+                    setIsCreateModalOpen(false);
+                    setNewClanName('');
+                  }}
+                  disabled={isCreatingClan}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary" disabled={isCreatingClan}>
+                  {isCreatingClan ? 'Creating...' : 'Create Clan'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

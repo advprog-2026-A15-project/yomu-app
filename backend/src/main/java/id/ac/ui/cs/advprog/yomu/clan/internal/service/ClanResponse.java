@@ -8,6 +8,7 @@ public record ClanResponse(
     String clanName,
     UUID ownerUserId,
     List<UUID> memberUserIds,
+    List<ClanMemberSummary> members,
     int memberCount,
     int maxMembers,
     boolean joinable,

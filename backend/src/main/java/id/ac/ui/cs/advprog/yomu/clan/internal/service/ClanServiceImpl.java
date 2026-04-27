@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.yomu.clan.internal.service;
 
+import id.ac.ui.cs.advprog.yomu.auth.AuthFacade;
 import id.ac.ui.cs.advprog.yomu.clan.internal.model.Clan;
 import id.ac.ui.cs.advprog.yomu.clan.internal.repository.ClanRepository;
 import org.springframework.http.HttpStatus;
@@ -14,9 +15,11 @@ import java.util.UUID;
 public class ClanServiceImpl implements ClanService {
 
     private final ClanRepository clanRepository;
+    private final AuthFacade authFacade;
 
-    public ClanServiceImpl(ClanRepository clanRepository) {
+    public ClanServiceImpl(ClanRepository clanRepository, AuthFacade authFacade) {
         this.clanRepository = clanRepository;
+        this.authFacade = authFacade;
     }
 
     @Override
@@ -130,11 +133,26 @@ public class ClanServiceImpl implements ClanService {
 
     private ClanResponse toResponse(Clan clan) {
         List<UUID> members = clan.getMemberUserIds().stream().sorted(Comparator.comparing(UUID::toString)).toList();
+        List<ClanMemberSummary> memberSummaries = members.stream()
+            .map(memberId -> new ClanMemberSummary(
+                memberId,
+                authFacade.getUserById(memberId)
+                    .map(user -> {
+                        if (user.getDisplayName() != null && !user.getDisplayName().isBlank()) {
+                            return user.getDisplayName();
+                        }
+                        return user.getUsername();
+                    })
+                    .orElse("Unknown User"),
+                clan.getOwnerUserId().equals(memberId)
+            ))
+            .toList();
         return new ClanResponse(
             clan.getId(),
             clan.getName(),
             clan.getOwnerUserId(),
             members,
+            memberSummaries,
             members.size(),
             Clan.MAX_MEMBERS,
             !clan.isFull(),

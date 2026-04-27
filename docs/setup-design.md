@@ -37,20 +37,21 @@ Aturan berikut perlu diaktifkan di GitHub repository settings:
   - `forum`
   - `learning`
 - Kontrak event publik antar modul ada di `docs/contracts/`
-- Setiap modul diarahkan memiliki datasource sendiri melalui `ModuleDatabaseConfiguration`, namun semuanya mengarah ke satu database shared dengan schema masing-masing modul
+- Setiap modul diarahkan memiliki datasource sendiri melalui `ModuleDatabaseConfiguration`, tetapi semuanya mengarah ke satu database shared dengan schema masing-masing modul
 
 ## Local/dev security profile
 
 - Konfigurasi keamanan lokal berada di `backend/src/main/java/id/ac/ui/cs/advprog/yomu/config/LocalDevelopmentSecurityConfig.java`
-- Konfigurasi ini hanya aktif untuk profile `local` dan `dev` (via `@Profile({"local", "dev"})`)
+- Konfigurasi ini hanya aktif jika property `yomu.security.bypass=true` diset
 - Tujuan utamanya mempermudah pengujian lokal (misalnya Postman) lintas modul tanpa hambatan security default
-- Selama profile `local/dev` aktif, CSRF protection dan authentication requirement dinonaktifkan untuk mempercepat iterasi development
+- Saat aktif, CSRF protection dan authentication requirement dinonaktifkan untuk mempercepat iterasi development
 
 ## Usage guidance
 
 - Development lokal default: aktifkan `spring.profiles.active=local`
-- Untuk pengujian manual endpoint `POST/PUT/DELETE`, profile `local` atau `dev` direkomendasikan agar tidak perlu CSRF token dan auth header sementara
-- Untuk production/staging, profile harus menggunakan `prod` atau profile non-local agar konfigurasi security sementara tidak aktif
+- Untuk pengujian manual endpoint `POST/PUT/DELETE`, tetap gunakan profile `local`, lalu aktifkan `yomu.security.bypass=true` hanya bila ingin mematikan security sementara
+- Local profile memakai `spring.datasource.url` tunggal yang disiapkan di `backend/src/main/resources/application-local.properties`
+- Untuk production/staging, profile harus menggunakan `prod` dan jangan set `yomu.security.bypass=true`
 
 ## Production safety
 

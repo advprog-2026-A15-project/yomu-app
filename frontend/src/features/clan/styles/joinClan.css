@@ -1,0 +1,150 @@
+.join-clan-page {
+  min-height: 100vh;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.join-clan-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.join-clan-header h1 {
+  margin: 0;
+}
+
+.join-clan-my-clan-label {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  border: 1px solid #334155;
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.join-clan-toolbar {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.join-clan-search-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 520px;
+  flex: 1 1 320px;
+}
+
+.join-clan-search-section input {
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 10px;
+  background: #020617;
+  color: #f8fafc;
+}
+
+.join-clan-create-trigger {
+  margin-top: 0;
+}
+
+.join-clan-list-section {
+  border: 1px solid #334155;
+  border-radius: 12px;
+  padding: 12px;
+  max-height: 64vh;
+  overflow-y: auto;
+}
+
+.join-clan-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.join-clan-list-item {
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.join-clan-list-item p {
+  margin: 4px 0 0;
+  color: #cbd5e1;
+}
+
+.join-clan-alert {
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.join-clan-alert-error {
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(239, 68, 68, 0.15);
+}
+
+.join-clan-alert-success {
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: rgba(34, 197, 94, 0.15);
+}
+
+.join-clan-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.join-clan-modal {
+  width: min(420px, 100%);
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 14px;
+  padding: 16px;
+}
+
+.join-clan-modal h2 {
+  margin-top: 0;
+}
+
+.join-clan-create-form {
+  display: grid;
+  gap: 10px;
+}
+
+.join-clan-create-form input {
+  border: 1px solid #334155;
+  border-radius: 8px;
+  padding: 10px;
+  background: #020617;
+  color: #f8fafc;
+}
+
+.join-clan-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.join-clan-cancel-btn {
+  border: 1px solid #334155;
+  background: transparent;
+  color: #f8fafc;
+  border-radius: 8px;
+  padding: 10px 12px;
+  cursor: pointer;
+}

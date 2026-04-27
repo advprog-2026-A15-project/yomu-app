@@ -1,8 +1,6 @@
 package id.ac.ui.cs.advprog.yomu.clan.internal.controller;
 
-import id.ac.ui.cs.advprog.yomu.auth.internal.model.AuthProvider;
-import id.ac.ui.cs.advprog.yomu.auth.internal.model.Role;
-import id.ac.ui.cs.advprog.yomu.auth.internal.model.User;
+import id.ac.ui.cs.advprog.yomu.auth.AuthFacade;
 import id.ac.ui.cs.advprog.yomu.clan.internal.service.ClanMemberSummary;
 import id.ac.ui.cs.advprog.yomu.clan.internal.service.ClanResponse;
 import id.ac.ui.cs.advprog.yomu.clan.internal.service.ClanService;
@@ -15,15 +13,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -38,12 +38,14 @@ class ClanControllerTest {
 
     @Mock
     private ClanService clanService;
+    @Mock
+    private AuthFacade authFacade;
 
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(new ClanController(clanService)).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(new ClanController(clanService, authFacade)).build();
     }
 
     @AfterEach
@@ -218,17 +220,9 @@ class ClanControllerTest {
     }
 
     private void setAuthenticatedUser(UUID userId) {
-        User principal = User.builder()
-            .id(userId)
-            .username("user-" + userId)
-            .email("mail@example.com")
-            .role(Role.PELAJAR)
-            .provider(AuthProvider.LOCAL)
-            .createdAt(LocalDateTime.now())
-            .updatedAt(LocalDateTime.now())
-            .build();
+        when(authFacade.getAuthenticatedUserId(any(Authentication.class))).thenReturn(Optional.of(userId));
         SecurityContextHolder.getContext().setAuthentication(
-            new UsernamePasswordAuthenticationToken(principal, null, List.of())
+            new UsernamePasswordAuthenticationToken("principal", null, List.of())
         );
     }
 }

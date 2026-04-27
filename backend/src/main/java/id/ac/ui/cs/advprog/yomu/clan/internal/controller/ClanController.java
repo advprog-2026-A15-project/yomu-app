@@ -1,6 +1,6 @@
 package id.ac.ui.cs.advprog.yomu.clan.internal.controller;
 
-import id.ac.ui.cs.advprog.yomu.auth.internal.model.User;
+import id.ac.ui.cs.advprog.yomu.auth.AuthFacade;
 import id.ac.ui.cs.advprog.yomu.clan.internal.service.ClanResponse;
 import id.ac.ui.cs.advprog.yomu.clan.internal.service.ClanService;
 import jakarta.validation.Valid;
@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -26,9 +27,11 @@ import java.util.UUID;
 public class ClanController {
 
     private final ClanService clanService;
+    private final AuthFacade authFacade;
 
-    public ClanController(ClanService clanService) {
+    public ClanController(ClanService clanService, AuthFacade authFacade) {
         this.clanService = clanService;
+        this.authFacade = authFacade;
     }
 
     @GetMapping
@@ -64,9 +67,9 @@ public class ClanController {
 
     private UUID requireAuthenticatedUserId() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication == null || !(authentication.getPrincipal() instanceof User user) || user.getId() == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required");
-        }
-        return user.getId();
+        Optional<UUID> authenticatedUserId = Optional.ofNullable(authFacade.getAuthenticatedUserId(authentication))
+            .orElse(Optional.empty());
+        return authenticatedUserId
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required"));
     }
 }

@@ -1,25 +1,20 @@
 import { Routes, Route, Link } from 'react-router-dom'
-import { useState } from 'react'
 import { LoginPage, RegisterPage, ProfilePage } from './features/auth'
-import { useAuth } from './features/auth'
 import { AchievementAdminPage, AchievementsPage } from './features/achievements'
-import { ClanModal } from './features/clan/components/ClanModal'
+import { JoinClanPage } from './features/clan/pages/JoinClanPage'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
 import './App.css'
 
 function Home() {
-  const [isClanModalOpen, setIsClanModalOpen] = useState(false)
-  const { user } = useAuth()
-
   return (
     <>
       <section id="center">
         <div className="home-top-actions">
-          <button type="button" className="btn-primary" onClick={() => setIsClanModalOpen(true)}>
+          <Link to="/clans/join" className="btn-primary" style={{ textDecoration: 'none' }}>
             Join a Clan
-          </button>
+          </Link>
         </div>
         <div className="hero">
           <img src={heroImg} className="base" width="170" height="179" alt="" />
@@ -38,11 +33,6 @@ function Home() {
       </section>
 
       <div className="ticks"></div>
-      <ClanModal
-        isOpen={isClanModalOpen}
-        onClose={() => setIsClanModalOpen(false)}
-        userId={user?.id ?? null}
-      />
     </>
   );
 }
@@ -56,6 +46,7 @@ function App() {
       <Route path="/profile" element={<ProfilePage />} />
       <Route path="/achievements" element={<AchievementsPage />} />
       <Route path="/achievements/admin" element={<AchievementAdminPage />} />
+      <Route path="/clans/join" element={<JoinClanPage />} />
     </Routes>
   )
 }

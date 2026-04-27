@@ -187,3 +187,13 @@
     border-right-color: var(--border);
   }
 }
+
+.home-top-actions {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+}
+
+.home-top-actions .btn-primary {
+  margin-top: 0;
+}

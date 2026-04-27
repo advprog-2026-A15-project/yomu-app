@@ -37,20 +37,19 @@ export const clanService = {
     return readJsonOrThrow(response, 'Gagal memuat daftar clan.');
   },
 
-  createClan: async (creatorUserId, clanName) => {
+  createClan: async (clanName) => {
     const response = await fetch(API_URL, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ creatorUserId, clanName }),
+      body: JSON.stringify({ clanName }),
     });
     return readJsonOrThrow(response, 'Gagal membuat clan.');
   },
 
-  joinClan: async (clanId, userId) => {
+  joinClan: async (clanId) => {
     const response = await fetch(`${API_URL}/${encodeURIComponent(clanId)}/members`, {
       method: 'POST',
       headers: getAuthHeaders(),
-      body: JSON.stringify({ userId }),
     });
     return readJsonOrThrow(response, 'Gagal bergabung ke clan.');
   },

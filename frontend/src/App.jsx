@@ -2,6 +2,7 @@ import { Routes, Route, Link } from 'react-router-dom'
 import { LoginPage, RegisterPage, ProfilePage } from './features/auth'
 import { AchievementAdminPage, AchievementsPage } from './features/achievements'
 import { JoinClanPage } from './features/clan/pages/JoinClanPage'
+import { MyClanPage } from './features/clan/pages/MyClanPage'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
@@ -47,6 +48,7 @@ function App() {
       <Route path="/achievements" element={<AchievementsPage />} />
       <Route path="/achievements/admin" element={<AchievementAdminPage />} />
       <Route path="/clans/join" element={<JoinClanPage />} />
+      <Route path="/clans/my" element={<MyClanPage />} />
     </Routes>
   )
 }

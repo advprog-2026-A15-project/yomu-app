@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { clanService } from '../services/clanService';
 import { useAuth } from '../../auth';
+import { findMyClan } from '../utils/clanMembership';
 import '../styles/joinClan.css';
 
 export function JoinClanPage() {
@@ -17,12 +18,7 @@ export function JoinClanPage() {
   const [isCreatingClan, setIsCreatingClan] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
 
-  const myClan = useMemo(() => {
-    if (!user?.id) {
-      return null;
-    }
-    return clans.find((clan) => Array.isArray(clan.memberUserIds) && clan.memberUserIds.includes(user.id)) ?? null;
-  }, [clans, user]);
+  const myClan = useMemo(() => findMyClan(clans, user?.id), [clans, user?.id]);
 
   const visibleClans = useMemo(() => {
     const normalizedSearch = searchQuery.trim().toLowerCase();
@@ -94,7 +90,7 @@ export function JoinClanPage() {
       setClans(Array.isArray(data) ? data : []);
       setIsCreateModalOpen(false);
       setNewClanName('');
-      navigate('/');
+      navigate('/clans/my');
     } catch (err) {
       setError(err.message || 'Gagal membuat clan.');
     } finally {
@@ -106,7 +102,7 @@ export function JoinClanPage() {
     <main className="join-clan-page">
       <header className="join-clan-header">
         <h1>Join a Clan</h1>
-        {myClan ? <span className="join-clan-my-clan-label">My Clan</span> : null}
+        {myClan ? <Link to="/clans/my" className="join-clan-my-clan-label">My Clan</Link> : null}
       </header>
 
       <section className="join-clan-toolbar">

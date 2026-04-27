@@ -10,7 +10,7 @@ public class Clan {
 
     private final UUID id;
     private final String name;
-    private final UUID ownerUserId;
+    private UUID ownerUserId;
     private final Set<UUID> memberUserIds;
     private final String tier;
     private final double score;
@@ -65,7 +65,15 @@ public class Clan {
         memberUserIds.add(userId);
     }
 
+    public void removeMember(UUID userId) {
+        memberUserIds.remove(userId);
+    }
+
     public boolean isFull() {
         return memberUserIds.size() >= MAX_MEMBERS;
+    }
+
+    public void transferOwnership(UUID newOwnerUserId) {
+        this.ownerUserId = newOwnerUserId;
     }
 }

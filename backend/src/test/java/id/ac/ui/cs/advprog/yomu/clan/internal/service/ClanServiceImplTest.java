@@ -49,6 +49,19 @@ class ClanServiceImplTest {
     }
 
     @Test
+    void createClanRejectsWhenCreatorAlreadyInAnotherClan() {
+        UUID userId = UUID.randomUUID();
+        clanService.createClan(userId, "Clan Pertama");
+
+        ResponseStatusException exception = assertThrows(
+            ResponseStatusException.class,
+            () -> clanService.createClan(userId, "Clan Kedua")
+        );
+
+        assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
     void joinClanAddsMemberToClan() {
         UUID ownerUserId = UUID.randomUUID();
         ClanResponse createdClan = clanService.createClan(ownerUserId, "Diskusi Hebat");
@@ -84,6 +97,20 @@ class ClanServiceImplTest {
     }
 
     @Test
+    void joinClanRejectsWhenUserAlreadyInAnotherClan() {
+        UUID userId = UUID.randomUUID();
+        clanService.createClan(userId, "Clan A");
+        ClanResponse clanB = clanService.createClan(UUID.randomUUID(), "Clan B");
+
+        ResponseStatusException exception = assertThrows(
+            ResponseStatusException.class,
+            () -> clanService.joinClan(userId, clanB.clanId())
+        );
+
+        assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
     void joinClanRejectsWhenClanIsFull() {
         ClanResponse createdClan = clanService.createClan(UUID.randomUUID(), "Kapasitas Penuh");
         clanService.joinClan(UUID.randomUUID(), createdClan.clanId());
@@ -97,5 +124,59 @@ class ClanServiceImplTest {
         );
 
         assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
+    void leaveClanAllowsNonOwnerMemberToLeave() {
+        UUID ownerId = UUID.randomUUID();
+        UUID memberId = UUID.randomUUID();
+        ClanResponse createdClan = clanService.createClan(ownerId, "Leave Test Clan");
+        clanService.joinClan(memberId, createdClan.clanId());
+
+        ClanResponse response = clanService.leaveClan(memberId, createdClan.clanId());
+
+        assertThat(response.memberUserIds()).containsExactly(ownerId);
+    }
+
+    @Test
+    void leaveClanRejectsOwnerUntilOwnershipTransferred() {
+        UUID ownerId = UUID.randomUUID();
+        ClanResponse createdClan = clanService.createClan(ownerId, "Owner Leave Clan");
+
+        ResponseStatusException exception = assertThrows(
+            ResponseStatusException.class,
+            () -> clanService.leaveClan(ownerId, createdClan.clanId())
+        );
+
+        assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
+    }
+
+    @Test
+    void transferOwnershipAllowsOwnerToLeaveAfterTransfer() {
+        UUID ownerId = UUID.randomUUID();
+        UUID memberId = UUID.randomUUID();
+        ClanResponse createdClan = clanService.createClan(ownerId, "Transfer Clan");
+        clanService.joinClan(memberId, createdClan.clanId());
+
+        ClanResponse transferred = clanService.transferOwnership(ownerId, createdClan.clanId(), memberId);
+        ClanResponse afterLeave = clanService.leaveClan(ownerId, createdClan.clanId());
+
+        assertThat(transferred.ownerUserId()).isEqualTo(memberId);
+        assertThat(afterLeave.memberUserIds()).containsExactly(memberId);
+    }
+
+    @Test
+    void transferOwnershipRejectsWhenCallerIsNotOwner() {
+        UUID ownerId = UUID.randomUUID();
+        UUID memberId = UUID.randomUUID();
+        ClanResponse createdClan = clanService.createClan(ownerId, "Transfer Rule Clan");
+        clanService.joinClan(memberId, createdClan.clanId());
+
+        ResponseStatusException exception = assertThrows(
+            ResponseStatusException.class,
+            () -> clanService.transferOwnership(memberId, createdClan.clanId(), ownerId)
+        );
+
+        assertThat(exception.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
     }
 }

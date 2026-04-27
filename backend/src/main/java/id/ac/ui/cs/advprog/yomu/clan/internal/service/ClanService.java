@@ -9,5 +9,9 @@ public interface ClanService {
 
     ClanResponse joinClan(UUID userId, UUID clanId);
 
+    ClanResponse leaveClan(UUID userId, UUID clanId);
+
+    ClanResponse transferOwnership(UUID currentOwnerUserId, UUID clanId, UUID newOwnerUserId);
+
     List<ClanResponse> listClans();
 }

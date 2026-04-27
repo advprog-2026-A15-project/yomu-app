@@ -34,6 +34,20 @@ public class InMemoryClanRepository implements ClanRepository {
     }
 
     @Override
+    public Optional<Clan> findByMemberUserId(UUID userId) {
+        return clansById.values().stream()
+            .filter(clan -> clan.isMember(userId))
+            .findFirst();
+    }
+
+    @Override
+    public Optional<Clan> findByOwnerUserId(UUID ownerUserId) {
+        return clansById.values().stream()
+            .filter(clan -> clan.getOwnerUserId().equals(ownerUserId))
+            .findFirst();
+    }
+
+    @Override
     public boolean existsByNameIgnoreCase(String clanName) {
         return clanIdsByName.containsKey(normalizeName(clanName));
     }

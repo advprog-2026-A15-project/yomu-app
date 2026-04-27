@@ -14,5 +14,9 @@ public interface ClanRepository {
 
     List<Clan> findAll();
 
+    Optional<Clan> findByMemberUserId(UUID userId);
+
+    Optional<Clan> findByOwnerUserId(UUID ownerUserId);
+
     boolean existsByNameIgnoreCase(String clanName);
 }

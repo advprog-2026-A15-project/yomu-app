@@ -3,6 +3,7 @@ package id.ac.ui.cs.advprog.yomu.clan.internal.controller;
 import id.ac.ui.cs.advprog.yomu.auth.internal.model.AuthProvider;
 import id.ac.ui.cs.advprog.yomu.auth.internal.model.Role;
 import id.ac.ui.cs.advprog.yomu.auth.internal.model.User;
+import id.ac.ui.cs.advprog.yomu.clan.internal.service.ClanMemberSummary;
 import id.ac.ui.cs.advprog.yomu.clan.internal.service.ClanResponse;
 import id.ac.ui.cs.advprog.yomu.clan.internal.service.ClanService;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,6 +62,7 @@ class ClanControllerTest {
                 "Nusantara Readers",
                 creatorId,
                 List.of(creatorId),
+                List.of(new ClanMemberSummary(creatorId, "Creator", true)),
                 1,
                 5,
                 true,
@@ -94,7 +96,7 @@ class ClanControllerTest {
         UUID ownerId = UUID.fromString("11111111-1111-1111-1111-111111111111");
         UUID clanId = UUID.fromString("22222222-2222-2222-2222-222222222222");
         when(clanService.listClans()).thenReturn(List.of(
-            new ClanResponse(clanId, "Nusantara Readers", ownerId, List.of(ownerId), 1, 5, true, "BRONZE", 0.0d)
+            new ClanResponse(clanId, "Nusantara Readers", ownerId, List.of(ownerId), List.of(new ClanMemberSummary(ownerId, "Owner", true)), 1, 5, true, "BRONZE", 0.0d)
         ));
 
         mockMvc.perform(get("/api/clans"))
@@ -117,6 +119,10 @@ class ClanControllerTest {
                 "Nusantara Readers",
                 ownerId,
                 List.of(ownerId, userId),
+                List.of(
+                    new ClanMemberSummary(ownerId, "Owner", true),
+                    new ClanMemberSummary(userId, "Member", false)
+                ),
                 2,
                 5,
                 true,
@@ -154,7 +160,7 @@ class ClanControllerTest {
         UUID clanId = UUID.fromString("22222222-2222-2222-2222-222222222222");
         setAuthenticatedUser(userId);
         when(clanService.leaveClan(userId, clanId))
-            .thenReturn(new ClanResponse(clanId, "Nusantara Readers", ownerId, List.of(ownerId), 1, 5, true, "BRONZE", 0.0d));
+            .thenReturn(new ClanResponse(clanId, "Nusantara Readers", ownerId, List.of(ownerId), List.of(new ClanMemberSummary(ownerId, "Owner", true)), 1, 5, true, "BRONZE", 0.0d));
 
         mockMvc.perform(delete("/api/clans/22222222-2222-2222-2222-222222222222/members/me"))
             .andExpect(status().isOk())
@@ -170,7 +176,21 @@ class ClanControllerTest {
         UUID clanId = UUID.fromString("22222222-2222-2222-2222-222222222222");
         setAuthenticatedUser(ownerId);
         when(clanService.transferOwnership(ownerId, clanId, newOwnerId))
-            .thenReturn(new ClanResponse(clanId, "Nusantara Readers", newOwnerId, List.of(ownerId, newOwnerId), 2, 5, true, "BRONZE", 0.0d));
+            .thenReturn(new ClanResponse(
+                clanId,
+                "Nusantara Readers",
+                newOwnerId,
+                List.of(ownerId, newOwnerId),
+                List.of(
+                    new ClanMemberSummary(ownerId, "Owner", false),
+                    new ClanMemberSummary(newOwnerId, "New Owner", true)
+                ),
+                2,
+                5,
+                true,
+                "BRONZE",
+                0.0d
+            ));
 
         mockMvc.perform(put("/api/clans/22222222-2222-2222-2222-222222222222/owner")
                 .contentType(MediaType.APPLICATION_JSON)

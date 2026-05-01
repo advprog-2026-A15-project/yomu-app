@@ -1,10 +1,7 @@
-package id.ac.ui.cs.advprog.yomu.forum;
+package id.ac.ui.cs.advprog.yomu.shared.event;
 
 import java.time.Instant;
 
-/**
- * Event publik saat isi komentar diperbarui.
- */
 public record CommentUpdatedEvent(
     String userId,
     String bacaanId,
@@ -12,6 +9,5 @@ public record CommentUpdatedEvent(
     String commentId,
     String commentContent,
     Instant timestamp
-) {
-}
+) {}
 

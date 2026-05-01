@@ -1,11 +1,7 @@
-package id.ac.ui.cs.advprog.yomu.forum;
+package id.ac.ui.cs.advprog.yomu.shared.event;
 
 import java.time.Instant;
 
-/**
- * Event publik yang dilempar saat komentar baru dibuat.
- * Modul lain (seperti gamification) bisa mendengarkan event ini.
- */
 public record CommentCreatedEvent(
         String userId,
         String bacaanId,
@@ -13,5 +9,4 @@ public record CommentCreatedEvent(
         String commentId,
         String commentContent,
         Instant timestamp
-) {
-}
+) {}

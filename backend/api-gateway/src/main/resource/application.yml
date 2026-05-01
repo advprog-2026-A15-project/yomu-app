@@ -1,0 +1,50 @@
+server:
+  port: 8080 # Port utama yang akan diakses oleh Frontend
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:5173" # Port frontend React/Vite
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+      routes:
+        # 1. Routing untuk Auth Service
+        - id: auth-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/auth/**
+
+        # 2. Routing untuk Learning/Bacaan Service
+        - id: learning-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/bacaan/**, /api/learning/**
+
+        # 3. Routing untuk Achievements Service
+        - id: achievements-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/api/achievements/**, /api/missions/**
+
+        # 4. Routing untuk Forum Service
+        - id: forum-service
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/forum/**
+
+        # 5. Routing untuk Clan Service
+        - id: clan-service
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/clan/**

@@ -1,9 +1,9 @@
 package id.ac.ui.cs.advprog.yomu.achievements.internal.listener;
 
 import id.ac.ui.cs.advprog.yomu.achievements.internal.service.AchievementService;
-import id.ac.ui.cs.advprog.yomu.clan.LeagueActivityEvent;
-import id.ac.ui.cs.advprog.yomu.learning.LearningCompletedEvent;
-import id.ac.ui.cs.advprog.yomu.learning.QuizCompletedEvent;
+import id.ac.ui.cs.advprog.yomu.shared.event.LeagueActivityEvent;
+import id.ac.ui.cs.advprog.yomu.shared.event.LearningCompletedEvent;
+import id.ac.ui.cs.advprog.yomu.shared.event.QuizCompletedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;

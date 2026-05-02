@@ -5,7 +5,7 @@ import java.util.UUID;
 
 public record ClaimRewardResponse(
     UUID missionId,
-    UUID userId,
+    String missionName,
     int rewardPoints,
     boolean claimed,
     Instant claimedAt

@@ -7,9 +7,9 @@ import id.ac.ui.cs.advprog.yomu.achievements.internal.dto.CreateAchievementReque
 import id.ac.ui.cs.advprog.yomu.achievements.internal.dto.CreateDailyMissionRequest;
 import id.ac.ui.cs.advprog.yomu.achievements.internal.dto.DailyMissionProgressResponse;
 import id.ac.ui.cs.advprog.yomu.achievements.internal.dto.DailyMissionResponse;
-import id.ac.ui.cs.advprog.yomu.clan.LeagueActivityEvent;
-import id.ac.ui.cs.advprog.yomu.learning.LearningCompletedEvent;
-import id.ac.ui.cs.advprog.yomu.learning.QuizCompletedEvent;
+import id.ac.ui.cs.advprog.yomu.shared.event.LeagueActivityEvent;
+import id.ac.ui.cs.advprog.yomu.shared.event.LearningCompletedEvent;
+import id.ac.ui.cs.advprog.yomu.shared.event.QuizCompletedEvent;
 
 import java.util.List;
 import java.util.UUID;

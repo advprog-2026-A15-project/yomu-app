@@ -2,8 +2,9 @@ dependencies {
     // 1. Import Shared Library (
     implementation(project(":shared-lib"))
 
-    // 2. Web & Validation
+    // 2. Web & Validation & Security
     implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
 
     // 3. Database

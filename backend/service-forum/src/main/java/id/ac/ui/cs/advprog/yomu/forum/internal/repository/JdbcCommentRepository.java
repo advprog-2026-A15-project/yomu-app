@@ -31,7 +31,7 @@ public class JdbcCommentRepository implements CommentRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public JdbcCommentRepository(@Qualifier("forumJdbcTemplate") JdbcTemplate jdbcTemplate) {
+    public JdbcCommentRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 

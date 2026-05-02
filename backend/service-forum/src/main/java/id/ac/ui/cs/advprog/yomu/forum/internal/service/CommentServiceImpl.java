@@ -1,8 +1,8 @@
 package id.ac.ui.cs.advprog.yomu.forum.internal.service;
 
-import id.ac.ui.cs.advprog.yomu.forum.CommentCreatedEvent;
-import id.ac.ui.cs.advprog.yomu.forum.CommentDeletedEvent;
-import id.ac.ui.cs.advprog.yomu.forum.CommentUpdatedEvent;
+import id.ac.ui.cs.advprog.yomu.shared.event.CommentCreatedEvent;
+import id.ac.ui.cs.advprog.yomu.shared.event.CommentDeletedEvent;
+import id.ac.ui.cs.advprog.yomu.shared.event.CommentUpdatedEvent;
 import id.ac.ui.cs.advprog.yomu.forum.internal.model.Comment;
 import id.ac.ui.cs.advprog.yomu.forum.internal.repository.CommentRepository;
 import org.springframework.context.ApplicationEventPublisher;
@@ -28,24 +28,24 @@ public class CommentServiceImpl implements CommentService {
 	private final Clock clock;
 
 	public CommentServiceImpl(
-		CommentRepository commentRepository,
-		ApplicationEventPublisher eventPublisher,
-		Clock clock
-	) {
+			CommentRepository commentRepository,
+			ApplicationEventPublisher eventPublisher,
+			Clock clock) {
 		this.commentRepository = commentRepository;
 		this.eventPublisher = eventPublisher;
 		this.clock = clock;
 	}
 
 	@Override
-	@Transactional(transactionManager = "transactionManager")
+	@Transactional
 	public CommentCreatedEvent createComment(String userId, String bacaanId, String commentContent) {
 		return createComment(userId, bacaanId, commentContent, "root");
 	}
 
 	@Override
-	@Transactional(transactionManager = "transactionManager")
-	public CommentCreatedEvent createComment(String userId, String bacaanId, String commentContent, String parentComment) {
+	@Transactional
+	public CommentCreatedEvent createComment(String userId, String bacaanId, String commentContent,
+			String parentComment) {
 		String normalizedParent = (parentComment == null || parentComment.isBlank()) ? "root" : parentComment;
 		validateParentComment(bacaanId, normalizedParent);
 
@@ -55,53 +55,50 @@ public class CommentServiceImpl implements CommentService {
 
 		Comment savedComment = commentRepository.save(comment);
 		CommentCreatedEvent event = new CommentCreatedEvent(
-			savedComment.getUserId(),
-			savedComment.getBacaanId(),
-			savedComment.getParentComment(),
-			savedComment.getId(),
-			savedComment.getContent(),
-			timestamp
-		);
+				savedComment.getUserId(),
+				savedComment.getBacaanId(),
+				savedComment.getParentComment(),
+				savedComment.getId(),
+				savedComment.getContent(),
+				timestamp);
 		eventPublisher.publishEvent(event);
 		return event;
 	}
 
 	@Override
-	@Transactional(transactionManager = "transactionManager")
+	@Transactional
 	public CommentUpdatedEvent updateComment(String commentId, String commentContent) {
 		Comment existingComment = getCommentOrThrow(commentId);
-        Instant timestamp = clock.instant();
+		Instant timestamp = clock.instant();
 
 		commentRepository.updateContentById(commentId, commentContent);
 
 		CommentUpdatedEvent event = new CommentUpdatedEvent(
-			existingComment.getUserId(),
-			existingComment.getBacaanId(),
-			existingComment.getParentComment(),
-			commentId,
-			commentContent,
-			timestamp
-		);
+				existingComment.getUserId(),
+				existingComment.getBacaanId(),
+				existingComment.getParentComment(),
+				commentId,
+				commentContent,
+				timestamp);
 		eventPublisher.publishEvent(event);
 		return event;
 	}
 
 	@Override
-	@Transactional(transactionManager = "transactionManager")
+	@Transactional
 	public CommentDeletedEvent deleteComment(String commentId) {
 		Comment existingComment = getCommentOrThrow(commentId);
-        Instant timestamp = clock.instant();
+		Instant timestamp = clock.instant();
 
 		commentRepository.deleteById(commentId);
 
 		CommentDeletedEvent event = new CommentDeletedEvent(
-			existingComment.getUserId(),
-			existingComment.getBacaanId(),
-			existingComment.getParentComment(),
-			existingComment.getId(),
-			existingComment.getContent(),
-			timestamp
-		);
+				existingComment.getUserId(),
+				existingComment.getBacaanId(),
+				existingComment.getParentComment(),
+				existingComment.getId(),
+				existingComment.getContent(),
+				timestamp);
 		eventPublisher.publishEvent(event);
 		return event;
 	}
@@ -109,19 +106,19 @@ public class CommentServiceImpl implements CommentService {
 	@Override
 	public List<CommentResponse> listComments(String bacaanId) {
 		List<Comment> comments = (bacaanId == null || bacaanId.isBlank())
-			? commentRepository.findAll()
-			: commentRepository.findByBacaanId(bacaanId);
+				? commentRepository.findAll()
+				: commentRepository.findByBacaanId(bacaanId);
 
 		return comments.stream()
-			.map(this::toCommentResponse)
-			.toList();
+				.map(this::toCommentResponse)
+				.toList();
 	}
 
 	@Override
 	public List<CommentTreeResponse> listCommentsTree(String bacaanId) {
 		List<Comment> comments = (bacaanId == null || bacaanId.isBlank())
-			? commentRepository.findAll()
-			: commentRepository.findByBacaanId(bacaanId);
+				? commentRepository.findAll()
+				: commentRepository.findByBacaanId(bacaanId);
 
 		Map<String, MutableTreeNode> nodesById = new LinkedHashMap<>();
 		for (Comment comment : comments) {
@@ -149,25 +146,23 @@ public class CommentServiceImpl implements CommentService {
 
 	private CommentResponse toCommentResponse(Comment comment) {
 		return new CommentResponse(
-			comment.getId(),
-			comment.getUserId(),
-			comment.getBacaanId(),
-			comment.getParentComment(),
-			comment.getContent(),
-			comment.getCreatedAt().atZone(clock.getZone()).toInstant()
-		);
+				comment.getId(),
+				comment.getUserId(),
+				comment.getBacaanId(),
+				comment.getParentComment(),
+				comment.getContent(),
+				comment.getCreatedAt().atZone(clock.getZone()).toInstant());
 	}
 
 	private CommentTreeResponse toTreeResponse(MutableTreeNode node) {
 		return new CommentTreeResponse(
-			node.comment.getId(),
-			node.comment.getUserId(),
-			node.comment.getBacaanId(),
-			node.comment.getParentComment(),
-			node.comment.getContent(),
-			node.comment.getCreatedAt().atZone(clock.getZone()).toInstant(),
-			node.children.stream().map(this::toTreeResponse).toList()
-		);
+				node.comment.getId(),
+				node.comment.getUserId(),
+				node.comment.getBacaanId(),
+				node.comment.getParentComment(),
+				node.comment.getContent(),
+				node.comment.getCreatedAt().atZone(clock.getZone()).toInstant(),
+				node.children.stream().map(this::toTreeResponse).toList());
 	}
 
 	private static final class MutableTreeNode {
@@ -185,7 +180,7 @@ public class CommentServiceImpl implements CommentService {
 		}
 
 		Comment parent = commentRepository.findById(parentComment)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parent comment not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parent comment not found"));
 
 		if (!bacaanId.equals(parent.getBacaanId())) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Parent comment must belong to the same bacaan");
@@ -194,6 +189,6 @@ public class CommentServiceImpl implements CommentService {
 
 	private Comment getCommentOrThrow(String commentId) {
 		return commentRepository.findById(commentId)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
+				.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Comment not found"));
 	}
 }

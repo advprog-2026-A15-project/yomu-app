@@ -1,8 +1,8 @@
 package id.ac.ui.cs.advprog.yomu.forum.internal.service;
 
-import id.ac.ui.cs.advprog.yomu.forum.CommentCreatedEvent;
-import id.ac.ui.cs.advprog.yomu.forum.CommentDeletedEvent;
-import id.ac.ui.cs.advprog.yomu.forum.CommentUpdatedEvent;
+import id.ac.ui.cs.advprog.yomu.shared.event.CommentCreatedEvent;
+import id.ac.ui.cs.advprog.yomu.shared.event.CommentDeletedEvent;
+import id.ac.ui.cs.advprog.yomu.shared.event.CommentUpdatedEvent;
 
 import java.util.List;
 

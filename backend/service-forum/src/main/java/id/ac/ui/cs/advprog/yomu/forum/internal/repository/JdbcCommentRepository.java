@@ -2,7 +2,6 @@ package id.ac.ui.cs.advprog.yomu.forum.internal.repository;
 
 import id.ac.ui.cs.advprog.yomu.forum.internal.model.Comment;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;

@@ -1,7 +1,8 @@
 package id.ac.ui.cs.advprog.yomu.auth;
 
 import id.ac.ui.cs.advprog.yomu.auth.internal.repository.UserRepository;
-import id.ac.ui.cs.advprog.yomu.auth.internal.service.JwtService;
+import id.ac.ui.cs.advprog.yomu.shared.security.JwtService;
+import id.ac.ui.cs.advprog.yomu.shared.dto.UserDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -30,7 +31,7 @@ public class AuthFacade {
         try {
             String username = jwtService.extractUsername(token);
             return userRepository.findByUsernameOrEmail(username)
-                    .map(user -> jwtService.isTokenValid(token, user))
+                    .map(user -> jwtService.isTokenValid(token))
                     .orElse(false);
         } catch (Exception e) {
             return false;

@@ -1,7 +1,8 @@
 package id.ac.ui.cs.advprog.yomu.auth.internal.service;
 
-import id.ac.ui.cs.advprog.yomu.auth.UserDto;
-import id.ac.ui.cs.advprog.yomu.auth.UserRegisteredEvent;
+import id.ac.ui.cs.advprog.yomu.shared.dto.UserDto;
+import id.ac.ui.cs.advprog.yomu.shared.event.UserRegisteredEvent;
+import id.ac.ui.cs.advprog.yomu.shared.security.JwtService;
 import id.ac.ui.cs.advprog.yomu.auth.internal.dto.*;
 import id.ac.ui.cs.advprog.yomu.auth.internal.model.AuthProvider;
 import id.ac.ui.cs.advprog.yomu.auth.internal.model.Role;
@@ -16,6 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import java.util.Map;
+import java.util.HashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -54,7 +57,7 @@ public class AuthServiceImpl implements AuthService {
         // Publish event for Modulith
         eventPublisher.publishEvent(new UserRegisteredEvent(user.getId(), user.getUsername(), user.getEmail(), Instant.now()));
 
-        String jwtToken = jwtService.generateToken(user);
+        String jwtToken = generateTokenForUser(user);
         return AuthResponse.builder()
                 .token(jwtToken)
                 .user(mapToDto(user))
@@ -74,7 +77,7 @@ public class AuthServiceImpl implements AuthService {
             throw new IllegalArgumentException("Kredensial tidak valid");
         }
 
-        String jwtToken = jwtService.generateToken(user);
+        String jwtToken = generateTokenForUser(user);
         return AuthResponse.builder()
                 .token(jwtToken)
                 .user(mapToDto(user))
@@ -102,7 +105,7 @@ public class AuthServiceImpl implements AuthService {
                     return newUser;
                 });
 
-        String jwtToken = jwtService.generateToken(user);
+        String jwtToken = generateTokenForUser(user);
         return AuthResponse.builder()
                 .token(jwtToken)
                 .user(mapToDto(user))
@@ -143,7 +146,7 @@ public class AuthServiceImpl implements AuthService {
 
         userRepository.update(user);
         return AuthResponse.builder()
-                .token(jwtService.generateToken(user))
+                .token(generateTokenForUser(user))
                 .user(mapToDto(user))
                 .build();
     }
@@ -163,5 +166,12 @@ public class AuthServiceImpl implements AuthService {
                 .displayName(user.getDisplayName())
                 .role(user.getRole().name())
                 .build();
+    }
+
+    private String generateTokenForUser(User user) {
+        Map<String, Object> extraClaims = new HashMap<>();
+        extraClaims.put("id", user.getId().toString());
+        extraClaims.put("role", user.getRole().name());
+        return jwtService.generateToken(user.getUsername(), extraClaims);
     }
 }

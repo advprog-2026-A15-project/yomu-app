@@ -2,17 +2,12 @@ plugins {
     // Inherit plugins from root
 }
 
-extra["springCloudVersion"] = "2023.0.1" 
+val springCloudVersion = "2025.1.1"
 
 dependencies {
-    implementation("org.springframework.cloud:spring-cloud-starter-gateway")
+    implementation(platform("org.springframework.cloud:spring-cloud-dependencies:$springCloudVersion"))
+    implementation("org.springframework.cloud:spring-cloud-starter-gateway-server-webflux")
 
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
-}
-
-dependencyManagement {
-    imports {
-        mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
-    }
 }

@@ -4,7 +4,6 @@ import id.ac.ui.cs.advprog.yomu.auth.internal.model.AuthProvider;
 import id.ac.ui.cs.advprog.yomu.auth.internal.model.Role;
 import id.ac.ui.cs.advprog.yomu.auth.internal.model.User;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -18,7 +17,7 @@ public class UserRepository {
 
     private final JdbcTemplate jdbcTemplate;
 
-    public UserRepository(@Qualifier("authJdbcTemplate") JdbcTemplate jdbcTemplate) {
+    public UserRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 

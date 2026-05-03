@@ -1,0 +1,8 @@
+.gradle
+build
+*/build
+bin
+*/bin
+.localdb
+run_log.txt
+*.jar

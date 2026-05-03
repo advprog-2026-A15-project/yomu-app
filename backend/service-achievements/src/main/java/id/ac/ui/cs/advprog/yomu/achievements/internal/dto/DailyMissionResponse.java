@@ -1,6 +1,5 @@
 package id.ac.ui.cs.advprog.yomu.achievements.internal.dto;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
